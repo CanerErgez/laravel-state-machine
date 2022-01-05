@@ -1,0 +1,52 @@
+{
+    "name": "caner/state-machine",
+    "description": "Laravel Simple State Machine System",
+    "keywords": [
+        "caner",
+        "state-machine",
+        "laravel"
+    ],
+    "homepage": "https://github.com/CanerErgez/state-machine",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Caner Ergez",
+            "email": "ergezcaner@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "illuminate/support": "^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Caner\\StateMachine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Caner\\StateMachine\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Caner\\StateMachine\\StateMachineServiceProvider"
+            ]
+        }
+    }
+}
