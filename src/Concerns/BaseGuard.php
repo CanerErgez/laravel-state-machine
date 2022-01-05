@@ -14,6 +14,12 @@ abstract class BaseGuard implements BaseGuardInterface
     public ?Request $request;
     public array $data;
 
+    /**
+     * BaseGuard constructor.
+     * @param BaseStateMachine $stateMachine
+     * @param Request|null $request
+     * @param array $data
+     */
     public function __construct(
         BaseStateMachine $stateMachine,
         ?Request $request = null,
@@ -26,12 +32,18 @@ abstract class BaseGuard implements BaseGuardInterface
 
     abstract public function check(): self;
 
+    /**
+     * @return array
+     */
     public function getRequestData(): array
     {
         return $this->request->toArray() ?? [];
     }
 
-    public function completed()
+    /**
+     * @return void
+     */
+    public function completed(): void
     {
         event(new GuardCompletedEvent(get_class($this)));
     }

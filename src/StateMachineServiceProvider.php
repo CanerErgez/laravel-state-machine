@@ -24,9 +24,5 @@ class StateMachineServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'state-machine');
-
-        $this->app->singleton('state-machine', function () {
-            return new StateMachine;
-        });
     }
 }

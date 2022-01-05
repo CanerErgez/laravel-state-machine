@@ -13,6 +13,12 @@ abstract class BaseAfterAction implements BaseAfterActionInterface
     public ?Request $request;
     public array $data;
 
+    /**
+     * BaseAfterAction constructor.
+     * @param BaseStateMachine $baseStateMachine
+     * @param Request|null $request
+     * @param array $data
+     */
     public function __construct(BaseStateMachine $baseStateMachine, ?Request $request = null, array $data = [])
     {
         $this->baseStateMachine = $baseStateMachine;
@@ -22,7 +28,10 @@ abstract class BaseAfterAction implements BaseAfterActionInterface
 
     abstract public function handle();
 
-    public function completed()
+    /**
+     * @return void
+     */
+    public function completed(): void
     {
         event(new AfterActionCompletedEvent(get_class($this)));
     }

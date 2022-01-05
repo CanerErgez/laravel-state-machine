@@ -27,6 +27,12 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
     public ?Request $request;
     public array $data;
 
+    /**
+     * BaseTransition constructor.
+     * @param BaseStateMachine $baseStateMachine
+     * @param Request|null $request
+     * @param array $data
+     */
     public function __construct(BaseStateMachine $baseStateMachine, ?Request $request = null, array $data = [])
     {
         $this->baseStateMachine = $baseStateMachine;
@@ -52,6 +58,9 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
 
     abstract public function guards();
 
+    /**
+     * @return Model
+     */
     abstract public function action(): Model;
 
     abstract public function afterActions();
