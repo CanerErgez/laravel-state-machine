@@ -2,21 +2,22 @@
 
 
 # Create First After Action
-After actions runs after the `Guards` and `Action`.
+After actions run after the `Guards` and `Action`.
 
 The purpose of After Actions is to run notification 
 and similar processes that will run after the state 
 change is over.
 
 **Strongly Prefered;**
-- After Actions should be run async (Jobs, Queues etc.).
-  Because this fails should not be error the transition.
+- After Actions should be run async (Jobs, Queues, etc.).
+  Because this fails should not be an error in the transition.
   If After Actions throw any Exception all transitions are rolled back.
   
-- Sometimes, if you want stop the process in and rollback all changes
-you can use After Actions sync.
-  
-İmportant;
+- Sometimes, if you want to stop the process and rollback all changes
+  you can use After Actions sync.
+
+
+Important;
 
 - Your logic should be in `handle()` method.
   Transition are run each After Actions `handle()` method.

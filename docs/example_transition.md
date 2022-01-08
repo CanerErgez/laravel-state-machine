@@ -2,7 +2,7 @@
 
 
 # Example Transition in Created State Machine
-We created a sample State Machine in previus docs.
+We created a sample State Machine in previous docs.
 
 Let's code first transition in this state machine.
 
@@ -22,12 +22,12 @@ Example;
         use HasState;
     }
 
-İmportant;
-- `state()` method should wants 2 parameter. 
+Important;
+- `state()` method should wants 2 parameter.
   Because we can use more than one state machine in one model.
 - - First parameter is your StateMachine class. // Which State Machine to run ?
-- - Second parameter is your model attribute. // Which Model Attribute to run ?
-    
+- - The second parameter is your model attribute. // Which Model Attribute to run ?
+
 Example in Step 2.
 
 ### Step 2: Add transition move method in any Controller
@@ -75,7 +75,7 @@ Example Full Transition;
         }
     }
 
-You can get target state in request. But you should use full path.
+You can get the target state in request. But you should use the full path.
 
 Example Request Body;
 

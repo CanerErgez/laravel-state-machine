@@ -4,9 +4,9 @@
 # Create First State Machine
 We create a first State Machine in this document.
 
-For example: We have a `Post` model and model have a complex status map.
+For example, We have a `Post` model, and the model has a complex status map.
 
-Note: I prefer to create state machine classes in `app/Services` folder. If you doesn't have this folder create new one.
+Note: I prefer to create state machine classes in the `app/Services` folder. If you don't have this folder create a new one.
 
 In `app/Services/PostStateMachine/PostStateMachine.php`;
 

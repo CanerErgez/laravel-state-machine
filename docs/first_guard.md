@@ -2,10 +2,10 @@
 
 
 # Create First Guard
-Guards are control mechanism of state changes.
+Guards are the control mechanism of state changes.
 
-Notes: 
-- You can add an additional data for next steps if you want.
+Notes:
+- You can add additional data for the next steps if you want.
 
 Example;
 
@@ -19,9 +19,9 @@ Later Usage;
     $eaxmple = $this->data['additional_data'];
 
 **İmportant!!!**
--  Each Guard should be have `$result->data['result']` value.
-Because each guard after the run check this value. When this value are `false`
-stop the Transition and throw an exception.
+-  Each Guard should behave `$result->data['result']` value.
+Because each guard after the run check this value. When these 
+values are `false` stop the Transition and throw an exception.
    
 Example;
 

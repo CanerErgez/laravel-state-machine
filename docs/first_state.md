@@ -2,9 +2,9 @@
 
 
 # Create First State
-Each state must be extend in your State Machine.
+Each state must be extended in your State Machine.
 
-Provius doc, we create PostStateMachine, so we'll create new states in this state machine base.
+In the previous doc, we create PostStateMachine, so we'll create new states in this state machine base.
 
 We don't write anything in the created state.
 

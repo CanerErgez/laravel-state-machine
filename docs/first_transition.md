@@ -4,11 +4,11 @@
 # Create First Transition
 Transitions are so IMPORTANT!
 
-Because all state changes work in Transition system.
+Because all state changes work in the Transition system.
 
-Let's look example transition.
+Let's look at example transition.
 
-In ;
+In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 
 	namespace App\Services\PostStateMachine\Transitions;
 
