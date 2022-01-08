@@ -69,7 +69,7 @@ In future versions we will be add, create state machine parts in artisan command
 [3-) Create First Transition  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_transition.md)   
 [4-) Create First Guard   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_guard.md)  
 [5-) Create First AfterAction   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_after_action.md)   
-6-) Example Transition in Created State Machine  
+[6-) Example Transition in Created State Machine   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/example_transition.md)  
 7-) Create Another State Machine
 
 ### Changelog
