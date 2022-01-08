@@ -1,9 +1,9 @@
 
 
-# Very short description of the package
+# Laravel State Machine
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)    
-[![Total Downloads](https://img.shields.io/packagist/dt/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)    
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine) 
+[![Total Downloads](https://img.shields.io/packagist/dt/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine) 
 [![run-tests](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml)
 
 This package are helps you about to create State Machine data model based services.
@@ -68,8 +68,8 @@ In future versions we will be add, create state machine parts in artisan command
 [2-) Create First State  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state.md)  
 [3-) Create First Transition  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_transition.md)   
 [4-) Create First Guard   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_guard.md)  
-5-) Create First AfterAction  
-6-) Transition in Created State Machine  
+[5-) Create First AfterAction   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_after_action.md)   
+6-) Example Transition in Created State Machine  
 7-) Create Another State Machine
 
 ### Changelog
@@ -85,6 +85,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 If you discover any security related issues, please create an issue on github issues section.
 
 ## Credits
+
 Special thanks for [Tarfin Labs](https://github.com/tarfin-labs)
 
 - [Caner Ergez](https://github.com/CanerErgez)

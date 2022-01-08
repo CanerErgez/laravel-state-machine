@@ -39,7 +39,10 @@ Example;
     return $this;
 - If you are use `$this->data['data']['error']` value,
 when code find any `false` in `$this->data['result']`,
-this error message add the throwing exception.  
+this error message add the throwing exception. 
+
+- Your control logic should be in `check()` method.
+Transition are run each Guards `check()` method.
   
 - Each Guard must be return `$this`
 
