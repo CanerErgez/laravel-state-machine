@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Caner\StateMachine\Concerns;
-
 
 use Caner\StateMachine\Events\GuardCompletedEvent;
 use Caner\StateMachine\Interfaces\BaseGuardInterface;

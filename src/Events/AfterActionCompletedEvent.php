@@ -2,7 +2,6 @@
 
 namespace Caner\StateMachine\Events;
 
-use Caner\StateMachine\Concerns\BaseAfterAction;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

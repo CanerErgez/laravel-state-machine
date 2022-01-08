@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Caner\StateMachine\Concerns;
-
 
 use Caner\StateMachine\Exceptions\GuardErrorException;
 use Caner\StateMachine\Exceptions\GuardResultNotFoundException;

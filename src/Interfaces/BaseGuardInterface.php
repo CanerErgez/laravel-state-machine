@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Caner\StateMachine\Interfaces;
-
 
 use Caner\StateMachine\Concerns\BaseStateMachine;
 use Illuminate\Http\Request;

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Caner\StateMachine\Concerns;
 
 use Caner\StateMachine\Events\AfterActionCompletedEvent;

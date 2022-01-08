@@ -14,7 +14,7 @@ class StateMachineServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/config.php' => config_path('state-machine.php'),
-            ], 'config');
+            ], 'caner-state-machine-config');
         }
     }
 
