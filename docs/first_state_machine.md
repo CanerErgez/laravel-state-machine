@@ -10,6 +10,7 @@ Note: I prefer to create state machine classes in `app/Services` folder. If you 
 
 In `app/Services/PostStateMachine/PostStateMachine.php`;
 
+```php
     namespace App\Services\PostStateMachine;
 
     use Caner\StateMachine\Concerns\BaseStateMachine;
@@ -55,5 +56,6 @@ In `app/Services/PostStateMachine/PostStateMachine.php`;
 		  ];  
 		}
     }
+```
 
 Example project coming soon.
