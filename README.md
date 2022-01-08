@@ -24,7 +24,7 @@ In `config/app.php`;
 
 and publish config file;
 ```php 
-php artisan vendor:publish --tag=state-machine-config  
+php artisan vendor:publish --tag=caner-state-machine-config  
 ```  
 
 ### Step by step documentation
