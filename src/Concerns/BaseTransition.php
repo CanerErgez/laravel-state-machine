@@ -125,7 +125,9 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
 
         /** If result are not true, finish guards and throw new Exception */
         if ($result->data['result'] !== true) {
-            $errorMessage = $guard::class . ' are not return true result.';
+            $error = ' Error: ';
+            $error .= $result->data['result']['error'] ?? '';
+            $errorMessage = $guard::class . ' are not return true result.'. $error;
             throw new GuardErrorException($errorMessage);
         }
     }

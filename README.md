@@ -40,7 +40,7 @@ Basically we are build a `state` for each `status` and runs related `transition`
 
 Each `Transition` should consist of 3 parts. These are the `guards`, `action` and `afterActions` methods.
 
-![Sample Transition Workflow](https://github.com/CanerErgez/laravel-state-machine/raw/main/docs/img/1.png)
+![Sample Transition Workflow](https://github.com/CanerErgez/laravel-state-machine/raw/main/docs/img/2.png)
 
 I prefer to use package in complex status change.
 
@@ -67,7 +67,7 @@ In future versions we will be add, create state machine parts in artisan command
 [1-) Create First State Machine ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state_machine.md)  
 [2-) Create First State  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state.md)  
 [3-) Create First Transition  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_transition.md)   
-4-) Create First Guard  
+[4-) Create First Guard   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_guard.md)  
 5-) Create First AfterAction  
 6-) Transition in Created State Machine  
 7-) Create Another State Machine
