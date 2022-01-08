@@ -24,8 +24,8 @@ In `app/Services/PostStateMachine/PostStateMachine.php`;
     	}
 
 		/** 
-		*	Your State Machines all States, 
-		*	detail in Create First State doc.
+		* Your State Machines all States, 
+		* detail in Create First State doc.
 		*/
 		public function states()  
 		{  

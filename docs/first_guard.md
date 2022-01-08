@@ -9,14 +9,18 @@ Notes:
 
 Example;
 
+```php
     $this->data['data']['additional_data'] = 'Additional Data';
+```
 
 - You can use this data to next Guards, Actions or AfterActions. So,
   returning useful values with this `$this->data['data']` would make sense for later use.
   
 Later Usage;
 
-    $eaxmple = $this->data['additional_data'];
+```php
+    $example = $this->data['additional_data'];
+```
 
 **İmportant!!!**
 -  Each Guard should behave `$result->data['result']` value.
@@ -25,6 +29,7 @@ values are `false` stop the Transition and throw an exception.
    
 Example;
 
+```php
     if($this->exampleMethod()) {
         /** You can add any data, like an `error` */
         $this->data['data']['error'] = 'An Error Occured';
@@ -37,6 +42,8 @@ Example;
     }
 
     return $this;
+```
+
 - If you are use `$this->data['data']['error']` value,
 when code find any `false` in `$this->data['result']`,
 this error message add the throwing exception. 
@@ -50,6 +57,7 @@ Example Guard;
 
 In `app\Services\PostStateMachine\Guards\ExampleGuard.php`;
 
+```php
     namespace App\Services\PostStateMachine\Guards;
 
     use Caner\StateMachine\Concerns\BaseGuard;
@@ -63,3 +71,4 @@ In `app\Services\PostStateMachine\Guards\ExampleGuard.php`;
             return $this;
         }
     }
+```

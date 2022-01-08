@@ -26,6 +26,7 @@ Example After Action
 
 In `App\Services\PostStateMachine\AfterActions\ExampleAfterAction.php`;
 
+```php
     namespace App\Services\PostStateMachine\AfterActions;
 
     use Caner\StateMachine\Concerns\BaseAfterAction;
@@ -44,3 +45,4 @@ In `App\Services\PostStateMachine\AfterActions\ExampleAfterAction.php`;
             Notification::send($users, new PostCreated($this->baseStateMachine, $this->request, $this->data));
         }
     }
+```

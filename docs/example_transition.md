@@ -13,6 +13,7 @@ HasState trait add a `state()` method in your model.
 
 Example;
 
+```php
     namespace App\Models;
 
     use Caner\StateMachine\Traits\HasState;
@@ -21,6 +22,7 @@ Example;
     {
         use HasState;
     }
+```
 
 Important;
 - `state()` method should wants 2 parameter.
@@ -34,7 +36,9 @@ Example in Step 2.
 
 Model's `state()` method are return State Class
 
+```php
     $model->state(PostStateMachine::class, 'status')
+```
 
 This code will be return `new ExampleState()`
 
@@ -51,10 +55,13 @@ You can use this `$data` array to `Guards`, `Action` and
 
 Simple usage;
 
+```php
     $exampleState->transitionTo(TargetState::class, $request, $data);
+```
 
 Example Full Transition;
 
+```php
     namespace App\Http\Controllers;
 
     use App\Services\PostStateMachine\PostStateMachine;
@@ -74,11 +81,14 @@ Example Full Transition;
             return response()->json(['success' => true]);
         }
     }
+```
 
 You can get the target state in request. But you should use the full path.
 
 Example Request Body;
 
+```json
     {
         "target": "App\\Services\\PostStateMachine\\States\\ExampleState"
     }
+```

@@ -10,6 +10,7 @@ We don't write anything in the created state.
 
 In `App\Services\PostStateMachine\States\ExampleState.php`;
 
+```php
 	namespace App\Services\PostStateMachine\States;
 
 	use App\Services\PostStateMachine\PostStateMachine;
@@ -18,5 +19,6 @@ In `App\Services\PostStateMachine\States\ExampleState.php`;
 	{
 		//Nothing
 	}
+```
 
 Example project coming soon.

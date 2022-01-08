@@ -10,6 +10,7 @@ Let's look at example transition.
 
 In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 
+```php
 	namespace App\Services\PostStateMachine\Transitions;
 
 	use Caner\StateMachine\Concerns\BaseTransition;
@@ -72,5 +73,6 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 		  ];  
 		}
 	}
+```
 
 Example project coming soon.
