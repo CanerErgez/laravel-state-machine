@@ -1,6 +1,4 @@
 
-
-
 # Create First State
 Each state must be extended in your State Machine.
 

@@ -1,5 +1,4 @@
 
-
 # Laravel State Machine
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine) 

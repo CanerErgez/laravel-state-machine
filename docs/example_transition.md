@@ -1,6 +1,4 @@
 
-
-
 # Example Transition in Created State Machine
 We created a sample State Machine in previous docs.
 

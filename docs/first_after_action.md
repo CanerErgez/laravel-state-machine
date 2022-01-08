@@ -1,6 +1,4 @@
 
-
-
 # Create First After Action
 After actions run after the `Guards` and `Action`.
 

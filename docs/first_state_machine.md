@@ -1,6 +1,4 @@
 
-
-
 # Create First State Machine
 We create a first State Machine in this document.
 

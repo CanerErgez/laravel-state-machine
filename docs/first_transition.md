@@ -1,6 +1,3 @@
-
-
-
 # Create First Transition
 Transitions are so IMPORTANT!
 

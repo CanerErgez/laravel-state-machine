@@ -1,6 +1,4 @@
 
-
-
 # Create Another State Machine
 You can create **unlimited** State Machines 
 for **different models** or **different model attributes**.

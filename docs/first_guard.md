@@ -1,6 +1,4 @@
 
-
-
 # Create First Guard
 Guards are the control mechanism of state changes.
 
