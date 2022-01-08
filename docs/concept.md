@@ -14,3 +14,23 @@ Each `Transition` should consist of 3 parts. These are the `guards`, `action` an
 ![Sample Transition Workflow](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/img/1.png)
 
 I prefer to use package in complex status change.
+
+Preferred Directory Tree;
+
+- app  
+- - Services  
+- - - YourStateMachine  
+- - - - AfterActions
+- - - - Guards
+- - - - States
+- - - - Transitions
+- - - - YourStateMachine.php
+- - - AnotherStateMachine
+- - - - AfterActions
+- - - - Guards
+- - - - States
+- - - - Transitions
+- - - - AnotherStateMachine.php
+    
+In future versions we add, create state machine parts in artisan commands. This time commands run like this directory tree.
+    
