@@ -29,13 +29,13 @@ php artisan vendor:publish --tag=state-machine-config
 
 ### Step by step documentation
 
-[1-) Introducing Concept  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/CONCEPT.md)
-2-) Create Your First State Machine  
-3-) Create Your First State  
-4-) Create Your First Transition  
-5-) Create Your First Guard  
-5-) Create Your First AfterAction
-6-) Transition in Created State Machine
+[1-) Introducing Concept  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/concept.md)  
+[2-) Create First State Machine ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state_machine.md)  
+3-) Create First State  
+4-) Create First Transition  
+5-) Create First Guard  
+5-) Create First AfterAction  
+6-) Transition in Created State Machine  
 7-) Create Another State Machine
 
 ### Changelog
