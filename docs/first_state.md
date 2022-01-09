@@ -2,7 +2,77 @@
 # Create First State
 Each state must be extended in your State Machine.
 
-In the previous doc, we create PostStateMachine, so we'll create new states in this state machine base.
+You must define a state for each main attribute of a model.
+For example `status`. This is not required, but recommended.
+
+For example;
+
+My model have a 5 `status` and i store statuses in enums.
+
+For example;
+
+```php
+    namespace App\Enums\ExampleEnums;
+
+    class ExampleEnums
+    {
+        const EXAMPLE_ONE = 1;
+        const EXAMPLE_TWO = 2;
+        const EXAMPLE_THREE = 3;
+        const EXAMPLE_FOUR = 4;
+        const EXAMPLE_FİVE = 5;
+    }
+```
+
+If you have this `status` model, you should create 5 
+state for each `status`.
+
+For example;
+
+```php
+    ExampleOneState::class,
+    ExampleTwoState::class,
+    ExampleThreeState::class,
+    ExampleFourState::class,
+    ExampleFiveState::class,
+```
+
+So each `status` will define a state.
+
+You should define which `status` will work with which 
+`state` in the your state machine method of states.
+
+For example;
+
+```php
+    class ExampleStateMachine extends BaseStateMachine
+    {
+        /** 
+        * if the model has not been created yet, 
+        * we consider the state of the model as initalState.
+        */
+        public function initialState()
+        {
+            return ExampleOneState::class;
+        }
+
+        public function states(): array
+        {
+            return [
+                ExampleEnums::EXAMPLE_ONE   => ExampleOneState::class,
+                ExampleEnums::EXAMPLE_TWO   => ExampleTwoState::class,
+                ExampleEnums::EXAMPLE_THREE => ExampleThreeState::class,
+                ExampleEnums::EXAMPLE_FOUR  => ExampleFourState::class,
+                ExampleEnums::EXAMPLE_FIVE  => ExampleFiveState::class,
+            ];
+        }
+
+        // ...
+    }
+```
+
+In the previous doc, we create PostStateMachine, so we'll 
+create new states in this state machine base.
 
 We don't write anything in the created state.
 
