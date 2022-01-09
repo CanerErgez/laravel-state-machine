@@ -14,7 +14,7 @@ For example;
 ```php
     namespace App\Enums\ExampleEnums;
 
-    class ExampleEnums
+    class ExampleEnum
     {
         const EXAMPLE_ONE = 1;
         const EXAMPLE_TWO = 2;
@@ -49,7 +49,7 @@ For example;
     {
         /** 
         * if the model has not been created yet, 
-        * we consider the state of the model as initalState.
+        * we get the state of the model as initalState.
         */
         public function initialState()
         {
@@ -59,11 +59,11 @@ For example;
         public function states(): array
         {
             return [
-                ExampleEnums::EXAMPLE_ONE   => ExampleOneState::class,
-                ExampleEnums::EXAMPLE_TWO   => ExampleTwoState::class,
-                ExampleEnums::EXAMPLE_THREE => ExampleThreeState::class,
-                ExampleEnums::EXAMPLE_FOUR  => ExampleFourState::class,
-                ExampleEnums::EXAMPLE_FIVE  => ExampleFiveState::class,
+                ExampleEnum::EXAMPLE_ONE   => ExampleOneState::class,
+                ExampleEnum::EXAMPLE_TWO   => ExampleTwoState::class,
+                ExampleEnum::EXAMPLE_THREE => ExampleThreeState::class,
+                ExampleEnum::EXAMPLE_FOUR  => ExampleFourState::class,
+                ExampleEnum::EXAMPLE_FIVE  => ExampleFiveState::class,
             ];
         }
 
