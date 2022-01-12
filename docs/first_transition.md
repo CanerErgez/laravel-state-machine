@@ -35,8 +35,8 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 		* You have some data in this class;
 		*  
 		* $this->baseStateMachine->getModel() : It returns model data
-		* $this->baseStateMachine->request : It returns request data or null
-		* $this->baseStateMachine->data : It returns array
+		* $this->request : It returns request data or null
+		* $this->data : It returns array
 		*  
 		* $data variable is important, because you use guards returned datas
 		* in this section when you want.
@@ -49,7 +49,7 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 			  'status' => PostEnums::UNUSEFUL,  
 		  ]);  
 
-		  //  $this->baseStateMachine->data['ExampleGuardReturnedData'];
+		  //  $this->data['ExampleGuardReturnedData'];
 		  
 		  return $post;  
 		}
