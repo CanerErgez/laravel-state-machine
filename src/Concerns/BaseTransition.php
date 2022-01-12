@@ -21,21 +21,17 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
     public bool $isRunAllGuards = false;
     public bool $isRunAllAfterActions = false;
 
-    public BaseStateMachine $baseStateMachine;
-    public ?Request $request;
-    public array $data;
-
     /**
      * BaseTransition constructor.
      * @param BaseStateMachine $baseStateMachine
      * @param Request|null $request
      * @param array $data
      */
-    public function __construct(BaseStateMachine $baseStateMachine, ?Request $request = null, array $data = [])
-    {
-        $this->baseStateMachine = $baseStateMachine;
-        $this->request = $request;
-        $this->data = $data;
+    public function __construct(
+        public BaseStateMachine $baseStateMachine,
+        public ?Request $request = null,
+        public array $data = []
+    ) {
     }
 
     /**
