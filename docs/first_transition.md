@@ -61,7 +61,6 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 		  ]);  
 
 		  //  $this->baseStateMachine->data['ExampleGuardReturnedData'];
-		  
 		  return $post;  
 		}
 		
