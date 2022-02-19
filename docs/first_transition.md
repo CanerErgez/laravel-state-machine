@@ -15,6 +15,17 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 	class ExampleTransition extends BaseTransition  
 	{
 		/** 
+		* This control variable can update 
+		* your model main attribute to expected 
+		* target state value.
+		* 
+		* If you enable this feature,
+		* the main attribute update in the action
+		* method is not needed.
+		*/
+		public bool $automaticStateUpdate = true;
+	
+		/** 
 		* This section includes all guards
 		* when run in state change.
 		*  
@@ -72,4 +83,4 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 	}
 ```
 
-Example project coming soon.
+[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project)

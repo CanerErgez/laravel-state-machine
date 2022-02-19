@@ -56,4 +56,4 @@ In `app/Services/PostStateMachine/PostStateMachine.php`;
     }
 ```
 
-Example project coming soon.
+[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project)
