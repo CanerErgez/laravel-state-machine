@@ -120,7 +120,7 @@ abstract class BaseStateMachine implements StateMachineInterface
         /**
          * Transition Instance Getting.
          */
-        $transitionInstance = new $transitionClass($this, $request, $data);
+        $transitionInstance = new $transitionClass($this, $request, $data, $targetClass);
 
         /**
          * Transition are running

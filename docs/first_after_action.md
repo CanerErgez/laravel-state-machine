@@ -44,3 +44,4 @@ In `App\Services\PostStateMachine\AfterActions\ExampleAfterAction.php`;
         }
     }
 ```
+[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project) 

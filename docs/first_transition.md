@@ -15,6 +15,17 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 	class ExampleTransition extends BaseTransition  
 	{
 		/** 
+		* This control variable can update 
+		* your model main attribute to expected 
+		* target state value.
+		* 
+		* If you enable this feature,
+		* the main attribute update in the action
+		* method is not needed.
+		*/
+		public bool $automaticStateUpdate = true;
+	
+		/** 
 		* This section includes all guards
 		* when run in state change.
 		*  
@@ -35,8 +46,8 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 		* You have some data in this class;
 		*  
 		* $this->baseStateMachine->getModel() : It returns model data
-		* $this->request : It returns request data or null
-		* $this->data : It returns array
+		* $this->baseStateMachine->request : It returns request data or null
+		* $this->baseStateMachine->data : It returns array
 		*  
 		* $data variable is important, because you use guards returned datas
 		* in this section when you want.
@@ -49,8 +60,7 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 			  'status' => PostEnums::UNUSEFUL,  
 		  ]);  
 
-		  //  $this->data['ExampleGuardReturnedData'];
-		  
+		  //  $this->baseStateMachine->data['ExampleGuardReturnedData'];
 		  return $post;  
 		}
 		
@@ -72,4 +82,4 @@ In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
 	}
 ```
 
-Example project coming soon.
+[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project)

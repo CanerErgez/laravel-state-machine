@@ -8,7 +8,12 @@ use Illuminate\Http\Request;
 
 interface TransitionInterface
 {
-    public function __construct(BaseStateMachine $stateMachine, ?Request $request = null, array $data = []);
+    public function __construct(
+        BaseStateMachine $stateMachine,
+        ?Request $request = null,
+        array $data = [],
+        ?string $targetClass = null
+    );
 
     public function handle(): Model;
 
