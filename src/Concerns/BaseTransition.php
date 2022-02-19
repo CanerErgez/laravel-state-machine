@@ -20,17 +20,20 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
 
     public bool $isRunAllGuards = false;
     public bool $isRunAllAfterActions = false;
+    public bool $automaticStateUpdate = false;
 
     /**
      * BaseTransition constructor.
      * @param BaseStateMachine $baseStateMachine
      * @param Request|null $request
      * @param array $data
+     * @param string|null $targetClass
      */
     public function __construct(
         public BaseStateMachine $baseStateMachine,
         public ?Request $request = null,
-        public array $data = []
+        public array $data = [],
+        public ?string $targetClass = null
     ) {
     }
 
@@ -42,6 +45,8 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
     public function handle(): Model
     {
         $this->runGuards();
+
+        $this->updateStatus();
 
         $model = $this->action();
 
@@ -126,5 +131,21 @@ abstract class BaseTransition implements TransitionInterface, ShouldQueue
             $errorMessage = $guard::class . ' are not return true result.'. $error;
             throw new GuardErrorException($errorMessage);
         }
+    }
+
+    public function updateStatus()
+    {
+        if (!$this->automaticStateUpdate) {
+            return;
+        }
+
+        $model = $this->baseStateMachine->getModel();
+        $mainAttribute = $this->baseStateMachine->mainAttribute;
+
+        $targetStateValue = array_search($this->targetClass, $this->baseStateMachine->states());
+
+        $model->update([
+            $mainAttribute => $targetStateValue,
+        ]);
     }
 }
