@@ -2,6 +2,8 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Caner\StateMachine\Events\AfterActionCompletedEvent;
 use Caner\StateMachine\Events\GuardCompletedEvent;
 use Caner\StateMachine\Exceptions\GuardErrorException;
@@ -33,6 +35,8 @@ class BaseTransitionTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->testModelMock = $this->createMock(TestModel::class);
         $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
             ->setConstructorArgs([$this->testModelMock, 'status'])
@@ -42,12 +46,10 @@ class BaseTransitionTest extends TestCase
             ->setConstructorArgs([$this->testStateMachineMock])
             ->getMock();
         $this->testTransition = new FirstStateToSecondStateTransition($this->testStateMachineMock);
-
-        parent::setUp();
     }
 
-    /** @test */
-    public function it_should_run_related_methods_and_return_valid_model()
+    #[Test]
+    public function it_should_run_related_methods_and_return_valid_model(): void
     {
         $this->testTransitionMock = $this->getMockBuilder(FirstStateToSecondStateTransition::class)
             ->setConstructorArgs([$this->testStateMachineMock])
@@ -69,16 +71,16 @@ class BaseTransitionTest extends TestCase
         $this->assertEquals($this->testTransitionMock->handle(), $this->testModelMock);
     }
 
-    /** @test */
-    public function it_should_run_return_valid_guards()
+    #[Test]
+    public function it_should_run_return_valid_guards(): void
     {
         $this->assertEquals($this->testTransition->guards(), [
             TestGuard::class,
         ]);
     }
 
-    /** @test */
-    public function it_should_run_return_model_when_action_is_right()
+    #[Test]
+    public function it_should_run_return_model_when_action_is_right(): void
     {
         $this->testStateMachineMock->expects($this->once())
             ->method('getModel')
@@ -87,23 +89,20 @@ class BaseTransitionTest extends TestCase
         $this->testTransition->action();
     }
 
-    /** @test */
-    public function it_should_run_return_valid_after_actions()
+    #[Test]
+    public function it_should_run_return_valid_after_actions(): void
     {
         $this->assertEquals($this->testTransition->afterActions(), [
             TestAfterAction::class,
         ]);
     }
 
-    /** @test */
-    public function it_should_write_guard_logs_well_when_config_is_right()
+    #[Test]
+    public function it_should_write_guard_logs_well_when_config_is_right(): void
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.guard_condition_logs', true)
-            ->andReturn(true);
+        Config::set('state-machine.guard_condition_logs', true);
         Log::shouldReceive('debug')
             ->twice();
 
@@ -112,15 +111,12 @@ class BaseTransitionTest extends TestCase
         Event::assertDispatched(fn (GuardCompletedEvent $event) => $event->guard === TestGuard::class);
     }
 
-    /** @test */
-    public function it_should_not_write_guard_logs_well_when_config_is_wrong()
+    #[Test]
+    public function it_should_not_write_guard_logs_well_when_config_is_wrong(): void
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.guard_condition_logs', true)
-            ->andReturn(false);
+        Config::set('state-machine.guard_condition_logs', false);
         Log::shouldReceive('debug')
             ->never();
 
@@ -129,15 +125,12 @@ class BaseTransitionTest extends TestCase
         Event::assertDispatched(fn (GuardCompletedEvent $event) => $event->guard === TestGuard::class);
     }
 
-    /** @test */
-    public function it_should_write_after_action_logs_well_when_config_is_right()
+    #[Test]
+    public function it_should_write_after_action_logs_well_when_config_is_right(): void
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.after_action_logs', true)
-            ->andReturn(true);
+        Config::set('state-machine.after_action_logs', true);
         Log::shouldReceive('debug')
             ->twice();
 
@@ -146,15 +139,12 @@ class BaseTransitionTest extends TestCase
         Event::assertDispatched(fn (AfterActionCompletedEvent $event) => $event->afterAction === TestAfterAction::class);
     }
 
-    /** @test */
-    public function it_should_not_write_after_action_logs_well_when_config_is_wrong()
+    #[Test]
+    public function it_should_not_write_after_action_logs_well_when_config_is_wrong(): void
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.after_action_logs', true)
-            ->andReturn(false);
+        Config::set('state-machine.after_action_logs', false);
         Log::shouldReceive('debug')
             ->never();
 
@@ -163,8 +153,8 @@ class BaseTransitionTest extends TestCase
         Event::assertDispatched(fn (AfterActionCompletedEvent $event) => $event->afterAction === TestAfterAction::class);
     }
 
-    /** @test */
-    public function it_should_throw_guard_result_not_found_exception_when_guard_result_have_not_result()
+    #[Test]
+    public function it_should_throw_guard_result_not_found_exception_when_guard_result_have_not_result(): void
     {
         $this->expectException(GuardResultNotFoundException::class);
 
@@ -176,8 +166,8 @@ class BaseTransitionTest extends TestCase
         $this->testTransition->checkGuardData($obj ,$testGuard);
     }
 
-    /** @test */
-    public function it_should_throw_guard_error_exception_when_guard_result_is_false()
+    #[Test]
+    public function it_should_throw_guard_error_exception_when_guard_result_is_false(): void
     {
         $this->expectException(GuardErrorException::class);
 

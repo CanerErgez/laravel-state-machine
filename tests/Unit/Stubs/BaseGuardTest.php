@@ -9,76 +9,60 @@ use Caner\StateMachine\Tests\Stubs\TestStateMachine;
 use Caner\StateMachine\Tests\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class BaseGuardTest extends TestCase
 {
-    /** @var MockObject $testModelMock */
     public MockObject $testModelMock;
-
-    /** @var MockObject $testStateMachineMock */
     public MockObject $testStateMachineMock;
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->testModelMock = $this->createMock(TestModel::class);
         $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
             ->setConstructorArgs([$this->testModelMock, 'status'])
             ->getMock();
-
-        parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function it_should_return_valid_request_data()
+    #[Test]
+    public function it_should_return_valid_request_data(): void
     {
-        $requestArray = new Request(['test' => 'test']);
+        $request = new Request(['test' => 'test']);
+        $guard = new TestGuard($this->testStateMachineMock, $request);
 
-        $testGuardMock = $this->getMockBuilder(TestGuard::class)
-            ->setConstructorArgs([$this->testStateMachineMock, $requestArray])
-            ->onlyMethods(['check'])
-            ->getMock();
-
-        $this->assertEquals($testGuardMock->getRequestData(), $requestArray->toArray());
+        $this->assertSame($request->toArray(), $guard->getRequestData());
     }
 
-    /**
-     * @test
-     */
-    public function it_should_fire_completed_event()
+    #[Test]
+    public function it_should_return_empty_request_data_when_request_is_null(): void
+    {
+        $guard = new TestGuard($this->testStateMachineMock);
+
+        $this->assertSame([], $guard->getRequestData());
+    }
+
+    #[Test]
+    public function it_should_fire_completed_event(): void
     {
         Event::fake();
 
-        $requestArray = new Request(['test' => 'test']);
-
-        $testGuardMock = $this->getMockBuilder(TestGuard::class)
-            ->setConstructorArgs([$this->testStateMachineMock, $requestArray])
-            ->onlyMethods(['check'])
-            ->getMock();
-
-        $testGuardMock->completed();
+        $guard = new TestGuard($this->testStateMachineMock);
+        $guard->completed();
 
         Event::assertDispatched(GuardCompletedEvent::class);
     }
 
-    /**
-     * @test
-     */
-    public function it_should_return_right_check_result()
+    #[Test]
+    public function it_should_return_right_check_result(): void
     {
         Event::fake();
 
-        $requestArray = new Request(['test' => 'test']);
+        $guard = new TestGuard($this->testStateMachineMock);
+        $result = $guard->check();
 
-        $testGuardMock = $this->getMockBuilder(TestGuard::class)
-            ->setConstructorArgs([$this->testStateMachineMock, $requestArray])
-            ->onlyMethods(['completed'])
-            ->getMock();
-
-        $result = $testGuardMock->check();
-
-        $this->assertEquals($result->data['result'], true);
+        $this->assertTrue($result->data['result']);
     }
 }

@@ -1,6 +1,14 @@
 # Changelog
 
-All notable changes to `state-machine` will be documented in this file
+All notable changes to `state-machine` will be documented in this file.
+
+## 2.0.0
+
+- Added Laravel 12 and Laravel 13 support.
+- Raised the minimum PHP version to 8.2.
+- Updated Testbench, PHPUnit, and the GitHub Actions test matrix.
+- Fixed null request handling in guards.
+- Removed the obsolete manual service-provider registration step from the documentation.
 
 ## 1.1.0
 

@@ -6,7 +6,7 @@
         "state-machine",
         "laravel"
     ],
-    "homepage": "https://github.com/CanerErgez/state-machine",
+    "homepage": "https://github.com/CanerErgez/laravel-state-machine",
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -17,12 +17,12 @@
         }
     ],
     "require": {
-        "php": "^8.0",
-        "illuminate/support": "^8.0|^9.0"
+        "php": "^8.2",
+        "illuminate/support": "^12.0|^13.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.0",
-        "phpunit/phpunit": "^9.0"
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^11.5|^12.0"
     },
     "autoload": {
         "psr-4": {
@@ -31,13 +31,12 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Caner\\StateMachine\\Tests\\": "tests"
+            "Caner\\StateMachine\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
-
     },
     "config": {
         "sort-packages": true

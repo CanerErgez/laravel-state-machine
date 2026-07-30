@@ -2,6 +2,8 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Caner\StateMachine\Concerns\BaseStateMachine;
 use Caner\StateMachine\Exceptions\TransitionFailedException;
 use Caner\StateMachine\Exceptions\TransitionNotFoundException;
@@ -32,24 +34,24 @@ class BaseStateMachineTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->testModelMock = $this->createMock(TestModel::class);
         $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
             ->setConstructorArgs([$this->testModelMock, 'status'])
             ->getMock();
 
         $this->testStateMachine = new TestStateMachine($this->testModelMock, 'status');
-
-        parent::setUp();
     }
 
-    /** @test */
-    public function it_should_return_valid_initial_state_value()
+    #[Test]
+    public function it_should_return_valid_initial_state_value(): void
     {
         $this->assertEquals($this->testStateMachine->initialState(), TestStateEnums::FirstState);
     }
 
-    /** @test */
-    public function it_should_return_valid_states()
+    #[Test]
+    public function it_should_return_valid_states(): void
     {
         $this->assertEquals($this->testStateMachine->states(), [
             TestStateEnums::FirstState      => FirstState::class,
@@ -57,8 +59,8 @@ class BaseStateMachineTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_should_return_valid_transitions()
+    #[Test]
+    public function it_should_return_valid_transitions(): void
     {
         $this->assertEquals($this->testStateMachine->transitions(), [
             TestStateMachine::class => [
@@ -73,20 +75,20 @@ class BaseStateMachineTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_should_return_valid_model()
+    #[Test]
+    public function it_should_return_valid_model(): void
     {
         $this->assertEquals($this->testStateMachine->getModel(), $this->testModelMock);
     }
 
-    /** @test */
-    public function it_should_return_valid_state()
+    #[Test]
+    public function it_should_return_valid_state(): void
     {
         $this->assertNull($this->testStateMachine->getState());
     }
 
-    /** @test */
-    public function it_should_return_valid_possible_transitions()
+    #[Test]
+    public function it_should_return_valid_possible_transitions(): void
     {
         $this->testStateMachine = new FirstState($this->testModelMock, 'status');
 
@@ -95,8 +97,8 @@ class BaseStateMachineTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function it_should_throw_transition_not_found_exception()
+    #[Test]
+    public function it_should_throw_transition_not_found_exception(): void
     {
         $this->expectException(TransitionNotFoundException::class);
 
@@ -104,8 +106,8 @@ class BaseStateMachineTest extends TestCase
         $this->testStateMachine->transitionTo(FirstState::class);
     }
 
-    /** @test */
-    public function it_should_work_well_transition_to_method()
+    #[Test]
+    public function it_should_work_well_transition_to_method(): void
     {
         $this->testStateMachine = new FirstState($this->testModelMock, 'status');
 
@@ -115,8 +117,8 @@ class BaseStateMachineTest extends TestCase
         $this->assertEquals($this->testStateMachine->transitionTo(SecondState::class), $this->testModelMock);
     }
 
-    /** @test */
-    public function it_should_write_log_if_config_is_true()
+    #[Test]
+    public function it_should_write_log_if_config_is_true(): void
     {
         $this->expectException(TransitionFailedException::class);
 
@@ -124,18 +126,15 @@ class BaseStateMachineTest extends TestCase
 
         DB::shouldReceive('beginTransaction')->andThrow(new \Exception());
         DB::shouldReceive('rollBack')->once();
-        Config::shouldReceive('get')
-            ->once()
-            ->with('state-machine.error_logs', true)
-            ->andReturn(true);
+        Config::set('state-machine.error_logs', true);
         Log::shouldReceive('error')
             ->once();
 
         $this->testStateMachine->transitionTo(SecondState::class);
     }
 
-    /** @test */
-    public function it_should_not_write_log_if_config_is_false()
+    #[Test]
+    public function it_should_not_write_log_if_config_is_false(): void
     {
         $this->expectException(TransitionFailedException::class);
 
@@ -143,10 +142,7 @@ class BaseStateMachineTest extends TestCase
 
         DB::shouldReceive('beginTransaction')->andThrow(new \Exception());
         DB::shouldReceive('rollBack')->once();
-        Config::shouldReceive('get')
-            ->once()
-            ->with('state-machine.error_logs', true)
-            ->andReturn(false);
+        Config::set('state-machine.error_logs', false);
         Log::shouldReceive('error')
             ->never();
 

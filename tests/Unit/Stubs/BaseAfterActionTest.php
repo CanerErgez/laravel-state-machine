@@ -2,6 +2,8 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Caner\StateMachine\Events\AfterActionCompletedEvent;
 use Caner\StateMachine\Tests\Stubs\AfterActions\TestAfterAction;
 use Caner\StateMachine\Tests\Stubs\Models\TestModel;
@@ -21,18 +23,16 @@ class BaseAfterActionTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->testModelMock = $this->createMock(TestModel::class);
         $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
             ->setConstructorArgs([$this->testModelMock, 'status'])
             ->getMock();
-
-        parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function it_should_fire_completed_event()
+    #[Test]
+    public function it_should_fire_completed_event(): void
     {
         Event::fake();
 
@@ -46,10 +46,8 @@ class BaseAfterActionTest extends TestCase
         Event::assertDispatched(AfterActionCompletedEvent::class);
     }
 
-    /**
-     * @test
-     */
-    public function it_should_return_right_check_result()
+    #[Test]
+    public function it_should_return_right_check_result(): void
     {
         $requestArray = new Request(['test' => 'test']);
 

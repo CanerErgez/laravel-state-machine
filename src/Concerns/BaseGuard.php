@@ -8,12 +8,6 @@ use Illuminate\Http\Request;
 
 abstract class BaseGuard implements BaseGuardInterface
 {
-    /**
-     * BaseGuard constructor.
-     * @param BaseStateMachine $baseStateMachine
-     * @param Request|null $request
-     * @param array $data
-     */
     public function __construct(
         public BaseStateMachine $baseStateMachine,
         public ?Request $request = null,
@@ -23,19 +17,13 @@ abstract class BaseGuard implements BaseGuardInterface
 
     abstract public function check(): self;
 
-    /**
-     * @return array
-     */
     public function getRequestData(): array
     {
-        return $this->request->toArray() ?? [];
+        return $this->request?->toArray() ?? [];
     }
 
-    /**
-     * @return void
-     */
     public function completed(): void
     {
-        event(new GuardCompletedEvent(get_class($this)));
+        event(new GuardCompletedEvent($this::class));
     }
 }
