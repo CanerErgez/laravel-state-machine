@@ -20,4 +20,9 @@ final readonly class TransitionContext
     {
         return $this->withData(array_merge($this->data, $data));
     }
+
+    public function withMetadata(array $metadata): self
+    {
+        return new self($this->data, $this->actor, $metadata);
+    }
 }

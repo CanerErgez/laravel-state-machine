@@ -55,3 +55,25 @@ jobs:
 
             - name: Execute tests
               run: composer test
+
+    quality:
+        runs-on: ubuntu-latest
+        name: Code quality
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  coverage: none
+
+            - name: Install dependencies
+              run: composer update --prefer-stable --prefer-dist --no-interaction
+
+            - name: Check formatting
+              run: composer format:test
+
+            - name: Run static analysis
+              run: composer analyse

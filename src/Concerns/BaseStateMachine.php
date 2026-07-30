@@ -11,7 +11,9 @@ use Caner\StateMachine\Exceptions\GuardResultNotFoundException;
 use Caner\StateMachine\Exceptions\StateNotFoundException;
 use Caner\StateMachine\Exceptions\TransitionFailedException;
 use Caner\StateMachine\Exceptions\TransitionNotFoundException;
+use Caner\StateMachine\Exceptions\ConcurrentTransitionException;
 use Caner\StateMachine\Interfaces\StateMachineInterface;
+use Caner\StateMachine\History\TransitionHistoryRecorder;
 use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -71,6 +73,30 @@ abstract class BaseStateMachine implements StateMachineInterface
         return isset($this->transitions()[$this->getState()][$targetClass]);
     }
 
+    public function allowedTransitionDetails(?TransitionContext $context = null): array
+    {
+        $context ??= new TransitionContext();
+
+        return collect($this->transitions()[$this->getState()] ?? [])
+            ->map(function (string $transitionClass, string $targetClass) use ($context): array {
+                /** @var BaseTransition $transition */
+                $transition = app()->make($transitionClass, [
+                    'baseStateMachine' => $this,
+                    'context' => $context,
+                    'targetClass' => $targetClass,
+                ]);
+
+                return [
+                    'name' => $transition->name(),
+                    'state' => $targetClass,
+                    'transition' => $transitionClass,
+                    'metadata' => $transition->metadata(),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     public function transitionTo(string $targetClass, ?TransitionContext $context = null): Model
     {
         $fromState = $this->getState();
@@ -83,12 +109,6 @@ abstract class BaseStateMachine implements StateMachineInterface
         }
 
         $context ??= new TransitionContext();
-        $transition = app()->make($transitionClass, [
-            'baseStateMachine' => $this,
-            'context' => $context,
-            'targetClass' => $targetClass,
-        ]);
-
         event(new TransitionStarting(
             $this->model,
             $fromState,
@@ -99,9 +119,30 @@ abstract class BaseStateMachine implements StateMachineInterface
 
         try {
             $this->model = $this->model->getConnection()->transaction(
-                fn (): Model => $transition->handle()
+                function () use ($context, $fromState, $targetClass, $transitionClass): Model {
+                    $this->lockAndRefresh($fromState);
+
+                    /** @var BaseTransition $transition */
+                    $transition = app()->make($transitionClass, [
+                        'baseStateMachine' => $this,
+                        'context' => $context,
+                        'targetClass' => $targetClass,
+                    ]);
+                    $model = $transition->handle();
+
+                    app(TransitionHistoryRecorder::class)->record(
+                        model: $model,
+                        attribute: $this->mainAttribute,
+                        fromState: $fromState,
+                        toState: $targetClass,
+                        transition: $transition,
+                        context: $context,
+                    );
+
+                    return $model;
+                }
             );
-        } catch (GuardErrorException|GuardResultNotFoundException $exception) {
+        } catch (ConcurrentTransitionException|GuardErrorException|GuardResultNotFoundException $exception) {
             event(new TransitionFailed(
                 $this->model,
                 $fromState,
@@ -146,5 +187,25 @@ abstract class BaseStateMachine implements StateMachineInterface
         ));
 
         return $this->model;
+    }
+
+    private function lockAndRefresh(string $expectedState): void
+    {
+        if (!config('state-machine.locking.enabled', true) || !$this->model->exists) {
+            return;
+        }
+
+        $fresh = $this->model->newQuery()
+            ->whereKey($this->model->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        $this->model = $fresh;
+
+        if ($this->getState() !== $expectedState) {
+            throw new ConcurrentTransitionException(
+                'The model state changed while the transition was starting.'
+            );
+        }
     }
 }

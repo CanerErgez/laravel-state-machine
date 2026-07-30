@@ -3,6 +3,8 @@
 namespace Caner\StateMachine\Traits;
 
 use Caner\StateMachine\Concerns\BaseStateMachine;
+use Caner\StateMachine\History\TransitionHistory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasState
 {
@@ -28,4 +30,8 @@ trait HasState
         ]);
     }
 
+    public function stateTransitionHistory(): MorphMany
+    {
+        return $this->morphMany(TransitionHistory::class, 'model');
+    }
 }

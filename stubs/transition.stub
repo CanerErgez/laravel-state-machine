@@ -1,0 +1,26 @@
+<?php
+
+namespace DummyNamespace;
+
+use Caner\StateMachine\Concerns\BaseTransition;
+use Illuminate\Database\Eloquent\Model;
+
+final class DummyClass extends BaseTransition
+{
+    public bool $automaticStateUpdate = true;
+
+    public function guards(): array
+    {
+        return [];
+    }
+
+    public function action(): Model
+    {
+        return $this->baseStateMachine->getModel();
+    }
+
+    public function afterActions(): array
+    {
+        return [];
+    }
+}

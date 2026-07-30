@@ -1,0 +1,13 @@
+<?php
+
+namespace DummyNamespace;
+
+use Caner\StateMachine\Concerns\BaseAfterAction;
+
+final class DummyClass extends BaseAfterAction
+{
+    public function handle(): void
+    {
+        //
+    }
+}

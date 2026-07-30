@@ -15,6 +15,13 @@ All notable changes to `state-machine` will be documented in this file.
 - Kept after actions synchronous and before commit; jobs may opt into `afterCommit()`.
 - Removed the unused queue contract and traits from transitions.
 - Added strict missing-state validation and backed-enum value handling.
+- Added opt-in transition audit history with actor and metadata support.
+- Added row locking to prevent transitions from stale model state.
+- Added transition names, metadata, and detailed transition discovery.
+- Added generators for machines, states, transitions, guards, and after actions.
+- Added Mermaid state diagram generation.
+- Added Pint and Larastan quality gates.
+- Expanded integration coverage and release documentation.
 - Removed the obsolete manual service-provider registration step from the documentation.
 
 ## 1.1.0

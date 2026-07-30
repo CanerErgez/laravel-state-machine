@@ -1,0 +1,24 @@
+<?php
+
+namespace DummyNamespace;
+
+use BackedEnum;
+use Caner\StateMachine\Concerns\BaseStateMachine;
+
+final class DummyClass extends BaseStateMachine
+{
+    public function initialState(): int|string|BackedEnum
+    {
+        return 1;
+    }
+
+    public function states(): array
+    {
+        return [];
+    }
+
+    public function transitions(): array
+    {
+        return [];
+    }
+}

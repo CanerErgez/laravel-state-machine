@@ -1,0 +1,15 @@
+<?php
+
+namespace DummyNamespace;
+
+use Caner\StateMachine\Concerns\BaseGuard;
+
+final class DummyClass extends BaseGuard
+{
+    public function check(): self
+    {
+        $this->data['result'] = true;
+
+        return $this;
+    }
+}

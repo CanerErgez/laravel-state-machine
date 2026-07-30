@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create(config('state-machine.history.table'), function (Blueprint $table): void {
+            $table->id();
+            $table->string('model_type');
+            $table->string('model_id');
+            $table->string('attribute');
+            $table->string('from_state');
+            $table->string('to_state');
+            $table->string('transition');
+            $table->string('transition_name');
+            $table->nullableMorphs('actor');
+            $table->json('metadata')->nullable();
+            $table->timestamp('created_at');
+            $table->index(['model_type', 'model_id', 'attribute']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('state-machine.history.table'));
+    }
+};

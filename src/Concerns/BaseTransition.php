@@ -11,6 +11,7 @@ use Caner\StateMachine\Interfaces\TransitionInterface;
 use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 abstract class BaseTransition implements TransitionInterface
 {
@@ -36,6 +37,16 @@ abstract class BaseTransition implements TransitionInterface
         $this->runAfterActions();
 
         return $model;
+    }
+
+    public function name(): string
+    {
+        return Str::of(class_basename($this))->beforeLast('Transition')->snake()->toString();
+    }
+
+    public function metadata(): array
+    {
+        return [];
     }
 
     /** @return array<class-string<BaseGuard>> */
