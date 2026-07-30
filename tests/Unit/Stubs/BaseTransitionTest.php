@@ -102,10 +102,7 @@ class BaseTransitionTest extends TestCase
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.guard_condition_logs', true)
-            ->andReturn(true);
+        Config::set('state-machine.guard_condition_logs', true);
         Log::shouldReceive('debug')
             ->twice();
 
@@ -119,10 +116,7 @@ class BaseTransitionTest extends TestCase
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.guard_condition_logs', true)
-            ->andReturn(false);
+        Config::set('state-machine.guard_condition_logs', false);
         Log::shouldReceive('debug')
             ->never();
 
@@ -136,10 +130,7 @@ class BaseTransitionTest extends TestCase
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.after_action_logs', true)
-            ->andReturn(true);
+        Config::set('state-machine.after_action_logs', true);
         Log::shouldReceive('debug')
             ->twice();
 
@@ -153,10 +144,7 @@ class BaseTransitionTest extends TestCase
     {
         Event::fake();
 
-        Config::shouldReceive('get')
-            ->twice()
-            ->with('state-machine.after_action_logs', true)
-            ->andReturn(false);
+        Config::set('state-machine.after_action_logs', false);
         Log::shouldReceive('debug')
             ->never();
 
