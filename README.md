@@ -1,30 +1,36 @@
 
 # Laravel State Machine
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine) 
-[![Total Downloads](https://img.shields.io/packagist/dt/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine) 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)
+[![Total Downloads](https://img.shields.io/packagist/dt/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)
 [![run-tests](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml)
 
 This package helps you to create State Machine data model-based services.
 
+## Requirements
+
+- PHP 8.2 or later
+- Laravel 12 or 13
+
+Laravel 13 itself requires PHP 8.3 or later.
+
 ## Installation
 
-You can install the package via composer:
+You can install the package via Composer:
 
-```bash 
-composer require caner/state-machine  
-```   
+```bash
+composer require caner/state-machine
+```
+
+Laravel package discovery registers the service provider automatically.
+
+Publish the config file:
+
+```bash
+php artisan vendor:publish --tag=caner-state-machine-config
+```
+
 ## Usage
-
-In `config/app.php`;
-```php 
-\Caner\StateMachine\StateMachineServiceProvider::class,  
-```  
-
-and publish config file;
-```php 
-php artisan vendor:publish --tag=caner-state-machine-config  
-```  
 
 ### Step by step documentation
 
@@ -62,14 +68,13 @@ Preferred Directory Tree;
 
 In future versions, we will be added, create state machine parts in artisan commands. This time commands run like this directory tree.
 
-
-[1-) Create First State Machine ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state_machine.md)  
-[2-) Create First State  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state.md)  
-[3-) Create First Transition  ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_transition.md)   
-[4-) Create First Guard   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_guard.md)  
-[5-) Create First AfterAction   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_after_action.md)   
-[6-) Example Transition in Created State Machine   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/example_transition.md)  
-[7-) Create Another State Machine   ](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/create_another_state_machine.md)
+[1-) Create First State Machine](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state_machine.md)  
+[2-) Create First State](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state.md)  
+[3-) Create First Transition](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_transition.md)  
+[4-) Create First Guard](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_guard.md)  
+[5-) Create First AfterAction](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_after_action.md)  
+[6-) Example Transition in Created State Machine](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/example_transition.md)  
+[7-) Create Another State Machine](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/create_another_state_machine.md)
 
 ### Changelog
 
