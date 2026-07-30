@@ -1,59 +1,70 @@
+# Create a State Machine
 
-# Create First State Machine
-We create a first State Machine in this document.
+This example defines a state machine for a `Post` model whose state is stored in its `status` attribute.
 
-For example, We have a `Post` model, and the model has a complex status map.
-
-Note: I prefer to create state machine classes in the `app/Services` folder. If you don't have this folder create a new one.
-
-In `app/Services/PostStateMachine/PostStateMachine.php`;
+Create `app/Services/PostStateMachine/PostStateMachine.php`:
 
 ```php
-    namespace App\Services\PostStateMachine;
+<?php
 
-    use Caner\StateMachine\Concerns\BaseStateMachine;
-    
-    class PostStateMachine extends BaseStateMachine  
+namespace App\Services\PostStateMachine;
+
+use App\Enums\PostStatus;
+use App\Services\PostStateMachine\States\ApprovedState;
+use App\Services\PostStateMachine\States\DraftState;
+use App\Services\PostStateMachine\States\NeedReviewState;
+use App\Services\PostStateMachine\States\UnusableState;
+use App\Services\PostStateMachine\Transitions\ApprovedToDraftTransition;
+use App\Services\PostStateMachine\Transitions\DraftToNeedReviewTransition;
+use App\Services\PostStateMachine\Transitions\NeedReviewToApprovedTransition;
+use Caner\StateMachine\Concerns\BaseStateMachine;
+
+class PostStateMachine extends BaseStateMachine
+{
+    public function initialState(): string
     {
-	    /** This is your State Machines initial state. */
-    	public function initialState()  
-    	{  
-	    	return DraftState::class;  
-    	}
-
-		/** 
-		* Your State Machines all States, 
-		* detail in Create First State doc.
-		*/
-		public function states()  
-		{  
-		  return [  
-			  PostEnums::DRAFT => DraftState::class,  
-			  PostEnums::NEED_REVIEW => NeedPreviewState::class,  
-			  PostEnums::APPROVED => ApprovedState::class,  
-			  PostEnums::UNUSEFUL => UnUsefulState::class,  
-		  ];  
-		}
-
-		/**
-		* This section includes state transitions map.
-		* 
-		* Note: It should start to 'initialState()' you must
-		* don't forget!
-		*/
-		public function transitions()  
-		{  
-		  return [  
-			  self::class => [  
-				  $this->initialState()   => DraftTransition::class,  
-			  ],  
-			  CurrentState::class => [  
-				 TargetStateOne::class => CurrentStateToTargetStateOneTransition::class,  
-				 TargetStateTwo::class => CurrentStateToTargetStateTwoTransition::class,  
-			  ],
-		  ];  
-		}
+        return DraftState::class;
     }
+
+    public function states(): array
+    {
+        return [
+            PostStatus::DRAFT => DraftState::class,
+            PostStatus::NEED_REVIEW => NeedReviewState::class,
+            PostStatus::APPROVED => ApprovedState::class,
+            PostStatus::UNUSABLE => UnusableState::class,
+        ];
+    }
+
+    public function transitions(): array
+    {
+        return [
+            DraftState::class => [
+                NeedReviewState::class => DraftToNeedReviewTransition::class,
+            ],
+            NeedReviewState::class => [
+                ApprovedState::class => NeedReviewToApprovedTransition::class,
+            ],
+            ApprovedState::class => [
+                DraftState::class => ApprovedToDraftTransition::class,
+            ],
+        ];
+    }
+}
 ```
 
-[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project)
+The `states()` keys are the values stored in the model attribute. The values are the corresponding state classes.
+
+The `transitions()` map is organized as:
+
+```php
+[
+    CurrentState::class => [
+        TargetState::class => TransitionClass::class,
+    ],
+]
+```
+
+Only transitions declared in this map are allowed. Calling an undeclared transition throws a `TransitionNotFoundException`.
+
+See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.
