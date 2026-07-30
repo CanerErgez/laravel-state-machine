@@ -18,7 +18,7 @@ class DraftToNeedReviewTransition extends BaseTransition
 {
     /**
      * When enabled, the package updates the model's state attribute to
-     * the value associated with the target state before action() runs.
+     * the value associated with the target state after action() succeeds.
      */
     public bool $automaticStateUpdate = true;
 
@@ -34,7 +34,7 @@ class DraftToNeedReviewTransition extends BaseTransition
         $post = $this->baseStateMachine->getModel();
 
         $post->update([
-            'review_started_at' => $this->data['review_started_at'] ?? now(),
+            'review_started_at' => $this->context->data['review_started_at'] ?? now(),
         ]);
 
         return $post;
@@ -54,9 +54,14 @@ Set `$automaticStateUpdate` to `true` when the package should update the state a
 Within a transition:
 
 - `$this->baseStateMachine->getModel()` returns the model.
-- `$this->request` contains the optional request.
-- `$this->data` contains custom input and values returned by guards.
+- `$this->context->data` contains input and values returned by guards.
+- `$this->context->actor` contains the optional initiating user or service.
+- `$this->context->metadata` contains tracing or integration metadata.
 
-The complete transition, including guards and after actions, runs inside a database transaction. If any step throws, the transaction is rolled back and a `TransitionFailedException` is thrown.
+The complete transition, including guards and after actions, runs inside a
+database transaction on the model's connection. Guard exceptions remain
+catchable as guard exceptions. Unexpected failures are wrapped in a
+`TransitionFailedException` whose `getPrevious()` value contains the original
+exception.
 
 See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.

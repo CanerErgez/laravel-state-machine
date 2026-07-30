@@ -32,16 +32,20 @@ $state = $post->state(PostStateMachine::class, 'status');
 Call `transitionTo()` with:
 
 1. The target state class.
-2. An optional `Illuminate\Http\Request`.
-3. An optional custom data array.
+2. An optional `TransitionContext`.
 
 ```php
+use Caner\StateMachine\Support\TransitionContext;
+
 $updatedPost = $post
     ->state(PostStateMachine::class, 'status')
     ->transitionTo(
         NeedReviewState::class,
-        $request,
-        ['initiated_by' => $request->user()->getKey()],
+        new TransitionContext(
+            data: $request->validated(),
+            actor: $request->user(),
+            metadata: ['source' => 'admin'],
+        ),
     );
 ```
 
@@ -55,6 +59,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Services\PostStateMachine\PostStateMachine;
 use App\Services\PostStateMachine\States\NeedReviewState;
+use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -64,7 +69,13 @@ class SubmitPostForReviewController extends Controller
     {
         $updatedPost = $post
             ->state(PostStateMachine::class, 'status')
-            ->transitionTo(NeedReviewState::class, $request);
+            ->transitionTo(
+                NeedReviewState::class,
+                new TransitionContext(
+                    data: $request->validated(),
+                    actor: $request->user(),
+                ),
+            );
 
         return response()->json($updatedPost);
     }

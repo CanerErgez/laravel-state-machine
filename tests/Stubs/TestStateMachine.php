@@ -12,12 +12,12 @@ use Caner\StateMachine\Tests\Stubs\Transitions\SecondStateToFirstStateTransition
 
 class TestStateMachine extends BaseStateMachine
 {
-    public function initialState()
+    public function initialState(): int|string|\BackedEnum
     {
         return TestStateEnums::FirstState;
     }
 
-    public function states()
+    public function states(): array
     {
         return [
             TestStateEnums::FirstState      => FirstState::class,
@@ -25,7 +25,7 @@ class TestStateMachine extends BaseStateMachine
         ];
     }
 
-    public function transitions()
+    public function transitions(): array
     {
         return [
             self::class => [

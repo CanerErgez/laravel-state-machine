@@ -6,10 +6,9 @@ use Caner\StateMachine\Concerns\BaseAfterAction;
 
 class TestAfterAction extends BaseAfterAction
 {
-    public function handle()
+    public function handle(): void
     {
         $this->completed();
 
-        return true;
     }
 }

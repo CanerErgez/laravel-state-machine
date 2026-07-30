@@ -9,8 +9,10 @@ use Caner\StateMachine\Tests\TestCase;
 class StateMachineTest extends TestCase
 {
     #[Test]
-    public function main_test(): void
+    public function package_boots(): void
     {
-        $this->assertNull(null);
+        $this->assertTrue($this->app->providerIsLoaded(
+            \Caner\StateMachine\StateMachineServiceProvider::class
+        ));
     }
 }

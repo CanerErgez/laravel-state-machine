@@ -2,62 +2,30 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
-use PHPUnit\Framework\Attributes\Test;
-
 use Caner\StateMachine\Events\AfterActionCompletedEvent;
+use Caner\StateMachine\Support\TransitionContext;
 use Caner\StateMachine\Tests\Stubs\AfterActions\TestAfterAction;
 use Caner\StateMachine\Tests\Stubs\Models\TestModel;
 use Caner\StateMachine\Tests\Stubs\TestStateMachine;
 use Caner\StateMachine\Tests\TestCase;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\Test;
 
 class BaseAfterActionTest extends TestCase
 {
-    /** @var MockObject $testModelMock */
-    public MockObject $testModelMock;
-
-    /** @var MockObject $testStateMachineMock */
-    public MockObject $testStateMachineMock;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->testModelMock = $this->createMock(TestModel::class);
-        $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
-            ->setConstructorArgs([$this->testModelMock, 'status'])
-            ->getMock();
-    }
-
     #[Test]
-    public function it_should_fire_completed_event(): void
+    public function it_receives_context_and_fires_the_legacy_completed_event(): void
     {
         Event::fake();
+        $model = TestModel::create(['status' => 1]);
+        $action = new TestAfterAction(
+            new TestStateMachine($model, 'status'),
+            new TransitionContext(data: ['order_id' => 10]),
+        );
 
-        $testAfterActionMock = $this->getMockBuilder(TestAfterAction::class)
-            ->setConstructorArgs([$this->testStateMachineMock])
-            ->onlyMethods(['handle'])
-            ->getMock();
-
-        $testAfterActionMock->completed();
+        $this->assertSame(['order_id' => 10], $action->data);
+        $action->handle();
 
         Event::assertDispatched(AfterActionCompletedEvent::class);
-    }
-
-    #[Test]
-    public function it_should_return_right_check_result(): void
-    {
-        $requestArray = new Request(['test' => 'test']);
-
-        $testAfterAction= $this->getMockBuilder(TestAfterAction::class)
-            ->setConstructorArgs([$this->testStateMachineMock, $requestArray])
-            ->onlyMethods(['completed'])
-            ->getMock();
-
-        $result = $testAfterAction->handle();
-
-        $this->assertEquals($result, true);
     }
 }

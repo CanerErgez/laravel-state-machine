@@ -2,12 +2,19 @@
 
 All notable changes to `state-machine` will be documented in this file.
 
-## 2.0.0
+## 2.0.0 - Unreleased
 
 - Added Laravel 12 and Laravel 13 support.
 - Raised the minimum PHP version to 8.2.
 - Updated Testbench, PHPUnit, and the GitHub Actions test matrix.
-- Fixed null request handling in guards.
+- Replaced the HTTP request dependency with a typed `TransitionContext`.
+- Added container resolution for state machines, transitions, guards, and after actions.
+- Added model-connection transactions and preserved original exception chains.
+- Added transition query methods and lifecycle events.
+- Changed automatic state updates to run after the transition action.
+- Kept after actions synchronous and before commit; jobs may opt into `afterCommit()`.
+- Removed the unused queue contract and traits from transitions.
+- Added strict missing-state validation and backed-enum value handling.
 - Removed the obsolete manual service-provider registration step from the documentation.
 
 ## 1.1.0

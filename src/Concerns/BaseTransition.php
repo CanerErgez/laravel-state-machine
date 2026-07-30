@@ -2,150 +2,161 @@
 
 namespace Caner\StateMachine\Concerns;
 
+use Caner\StateMachine\Events\GuardRejected;
+use Caner\StateMachine\Events\StateChanged;
 use Caner\StateMachine\Exceptions\GuardErrorException;
 use Caner\StateMachine\Exceptions\GuardResultNotFoundException;
+use Caner\StateMachine\Exceptions\StateNotFoundException;
 use Caner\StateMachine\Interfaces\TransitionInterface;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Request;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-abstract class BaseTransition implements TransitionInterface, ShouldQueue
+abstract class BaseTransition implements TransitionInterface
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
     public bool $isRunAllGuards = false;
     public bool $isRunAllAfterActions = false;
     public bool $automaticStateUpdate = false;
 
-    /**
-     * BaseTransition constructor.
-     * @param BaseStateMachine $baseStateMachine
-     * @param Request|null $request
-     * @param array $data
-     * @param string|null $targetClass
-     */
     public function __construct(
         public BaseStateMachine $baseStateMachine,
-        public ?Request $request = null,
-        public array $data = [],
-        public ?string $targetClass = null
+        public TransitionContext $context,
+        public string $targetClass,
     ) {
     }
 
-    /**
-     * @return Model
-     * @throws GuardErrorException
-     * @throws GuardResultNotFoundException
-     */
     public function handle(): Model
     {
         $this->runGuards();
-
-        $this->updateStatus();
-
         $model = $this->action();
+        $this->updateState($model);
 
+        // After actions run before commit. Implementations may dispatch a queued
+        // job with ->afterCommit() when post-commit execution is required.
         $this->runAfterActions();
 
         return $model;
     }
 
-    abstract public function guards();
+    /** @return array<class-string<BaseGuard>> */
+    abstract public function guards(): array;
 
-    /**
-     * @return Model
-     */
     abstract public function action(): Model;
 
-    abstract public function afterActions();
+    /** @return array<class-string<BaseAfterAction>> */
+    abstract public function afterActions(): array;
 
-    /**
-     * @throws GuardErrorException
-     * @throws GuardResultNotFoundException
-     */
-    public function runGuards()
+    public function runGuards(): void
     {
-        foreach ($this->guards() as $guard) {
+        foreach ($this->guards() as $guardClass) {
             if (config('state-machine.guard_condition_logs', true)) {
-                Log::debug($guard. ' Started.');
+                Log::debug($guardClass.' Started.');
             }
 
-            $result = (new $guard($this->baseStateMachine, $this->request, $this->data))->check();
+            $guard = app()->make($guardClass, [
+                'baseStateMachine' => $this->baseStateMachine,
+                'context' => $this->context,
+            ]);
+            $result = $guard->check();
 
-            /** It checks guard result is valid and true */
-            $this->checkGuardData($result, $guard);
+            try {
+                $this->checkGuardData($result, $guardClass);
+            } catch (GuardErrorException|GuardResultNotFoundException $exception) {
+                event(new GuardRejected(
+                    $this->baseStateMachine->getModel(),
+                    $guardClass,
+                    $this->context,
+                    $exception,
+                ));
 
-            /** If result have an any data, merged the data */
+                throw $exception;
+            }
+
             if (isset($result->data['data'])) {
-                $this->data = array_merge($this->data, $result->data['data']);
+                $this->context = $this->context->mergeData($result->data['data']);
             }
 
             if (config('state-machine.guard_condition_logs', true)) {
-                Log::debug($guard. ' Success.');
+                Log::debug($guardClass.' Success.');
             }
         }
 
         $this->isRunAllGuards = true;
     }
 
-    public function runAfterActions()
+    public function runAfterActions(): void
     {
-        foreach ($this->afterActions() as $afterAction) {
+        foreach ($this->afterActions() as $afterActionClass) {
             if (config('state-machine.after_action_logs', true)) {
-                Log::debug($afterAction. ' Started.');
+                Log::debug($afterActionClass.' Started.');
             }
 
-            (new $afterAction($this->baseStateMachine, $this->request, $this->data))->handle();
+            $afterAction = app()->make($afterActionClass, [
+                'baseStateMachine' => $this->baseStateMachine,
+                'context' => $this->context,
+            ]);
+            $afterAction->handle();
 
             if (config('state-machine.after_action_logs', true)) {
-                Log::debug($afterAction. ' Success.');
+                Log::debug($afterActionClass.' Success.');
             }
         }
 
         $this->isRunAllAfterActions = true;
     }
 
-    /**
-     * @param mixed $result
-     * @param $guard
-     * @throws GuardErrorException
-     * @throws GuardResultNotFoundException
-     */
-    public function checkGuardData(mixed $result, $guard): void
+    public function checkGuardData(mixed $result, string $guardClass): void
     {
-        /** If data have not any result, return error */
         if (!isset($result->data['result'])) {
-            $errorMessage = $guard::class . ' are not return any result data. Please check this guard.';
-            throw new GuardResultNotFoundException($errorMessage);
+            throw new GuardResultNotFoundException(
+                $guardClass.' did not return result data.'
+            );
         }
 
-        /** If result are not true, finish guards and throw new Exception */
         if ($result->data['result'] !== true) {
-            $error = ' Error: ';
-            $error .= $result->data['result']['error'] ?? '';
-            $errorMessage = $guard::class . ' are not return true result.'. $error;
-            throw new GuardErrorException($errorMessage);
+            $error = $result->data['result']['error'] ?? '';
+
+            throw new GuardErrorException(
+                trim($guardClass.' rejected the transition. '.$error)
+            );
         }
     }
 
-    public function updateStatus()
+    public function updateState(Model $model): void
     {
         if (!$this->automaticStateUpdate) {
             return;
         }
 
-        $model = $this->baseStateMachine->getModel();
-        $mainAttribute = $this->baseStateMachine->mainAttribute;
+        $targetStateValue = array_search(
+            $this->targetClass,
+            $this->baseStateMachine->states(),
+            true,
+        );
 
-        $targetStateValue = array_search($this->targetClass, $this->baseStateMachine->states());
+        if ($targetStateValue === false) {
+            throw new StateNotFoundException(
+                "Target state [{$this->targetClass}] is not defined."
+            );
+        }
 
+        $fromState = $this->baseStateMachine->getState();
         $model->update([
-            $mainAttribute => $targetStateValue,
+            $this->baseStateMachine->mainAttribute => $targetStateValue,
         ]);
+        $this->baseStateMachine->model = $model;
+
+        event(new StateChanged(
+            $model,
+            $fromState,
+            $this->targetClass,
+            $this->context,
+        ));
+    }
+
+    /** @deprecated Use updateState() */
+    public function updateStatus(): void
+    {
+        $this->updateState($this->baseStateMachine->getModel());
     }
 }

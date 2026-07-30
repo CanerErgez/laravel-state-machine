@@ -2,145 +2,148 @@
 
 namespace Caner\StateMachine\Concerns;
 
+use BackedEnum;
+use Caner\StateMachine\Events\TransitionCompleted;
+use Caner\StateMachine\Events\TransitionFailed;
+use Caner\StateMachine\Events\TransitionStarting;
+use Caner\StateMachine\Exceptions\GuardErrorException;
+use Caner\StateMachine\Exceptions\GuardResultNotFoundException;
+use Caner\StateMachine\Exceptions\StateNotFoundException;
 use Caner\StateMachine\Exceptions\TransitionFailedException;
 use Caner\StateMachine\Exceptions\TransitionNotFoundException;
 use Caner\StateMachine\Interfaces\StateMachineInterface;
+use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 abstract class BaseStateMachine implements StateMachineInterface
 {
-    /**
-     * State Machine Base Model.
-     *
-     * @var Model|null
-     */
-    public ?Model $model;
-
-    /**
-     * State Machine Main Model Attribute.
-     *
-     * @var string|null
-     */
-    public ?string $mainAttribute;
-
-    /**
-     * StateMachine constructor.
-     * @param Model|null $model
-     * @param string|null $mainAttribute
-     */
-    public function __construct(?Model $model = null, ?string $mainAttribute = null)
-    {
-        $this->model = $model;
-        $this->mainAttribute = $mainAttribute;
+    public function __construct(
+        public Model $model,
+        public string $mainAttribute,
+    ) {
     }
 
-    /**
-     * It returns selected model.
-     *
-     * @return Model|null
-     */
-    public function getModel()
+    public function getModel(): Model
     {
         return $this->model;
     }
 
-    /**
-     * Initial State Method.
-     *
-     * @return mixed
-     */
-    abstract public function initialState();
+    abstract public function initialState(): int|string|BackedEnum;
 
-    /**
-     * All used states definition.
-     *
-     * @return mixed
-     */
-    abstract public function states();
+    /** @return array<int|string, class-string<BaseStateMachine>> */
+    abstract public function states(): array;
 
-    /**
-     * All used transitions definition.
-     *
-     * @return mixed
-     */
-    abstract public function transitions();
+    /** @return array<class-string, array<class-string, class-string<BaseTransition>>> */
+    abstract public function transitions(): array;
 
-    /**
-     * It returns selected model's state.
-     *
-     * @return mixed
-     */
-    public function getState()
+    /** @return class-string<BaseStateMachine> */
+    public function getState(): string
     {
-        return $this->states()[$this?->getModel()?->{$this->mainAttribute}] ?? null;
+        $value = $this->model->getAttribute($this->mainAttribute) ?? $this->initialState();
+        $value = $value instanceof BackedEnum ? $value->value : $value;
+        $state = $this->states()[$value] ?? null;
+
+        if ($state === null) {
+            throw new StateNotFoundException("State [{$value}] is not defined.");
+        }
+
+        return $state;
     }
 
-    /**
-     * It returns possible transitions.
-     *
-     * @return null|array
-     */
+    /** @return array<class-string> */
+    public function allowedTransitions(): array
+    {
+        return array_keys($this->transitions()[$this->getState()] ?? []);
+    }
+
+    /** @deprecated Use allowedTransitions() */
     public function getPossibleTransitions(): ?array
     {
-        if (isset($this->transitions()[get_class($this)])) {
-            return array_keys($this->transitions()[get_class($this)]);
-        }
+        $transitions = $this->allowedTransitions();
 
-        return null;
+        return $transitions === [] ? null : $transitions;
     }
 
-    /**
-     * It runs state change logic.
-     *
-     * @param string $targetClass
-     * @param Request|null $request
-     * @param array $data
-     * @throws TransitionNotFoundException
-     * @throws TransitionFailedException
-     */
-    public function transitionTo(string $targetClass, ?Request $request = null, array $data = [])
+    public function canTransitionTo(string $targetClass): bool
     {
-        /**
-         * It should throw 'TransitionNotFoundException' when transition is not found
-         */
-        if (!isset($this->transitions()[get_class($this)][$targetClass])) {
-            $error = 'Transition Not Found : Class '.get_class($this).' to '.$targetClass;
-            throw new TransitionNotFoundException($error);
+        return isset($this->transitions()[$this->getState()][$targetClass]);
+    }
+
+    public function transitionTo(string $targetClass, ?TransitionContext $context = null): Model
+    {
+        $fromState = $this->getState();
+        $transitionClass = $this->transitions()[$fromState][$targetClass] ?? null;
+
+        if ($transitionClass === null) {
+            throw new TransitionNotFoundException(
+                "Transition not found: {$fromState} to {$targetClass}."
+            );
         }
 
-        /**
-         * Get current state to target state transition
-         */
-        $transitionClass = $this->transitions()[get_class($this)][$targetClass];
+        $context ??= new TransitionContext();
+        $transition = app()->make($transitionClass, [
+            'baseStateMachine' => $this,
+            'context' => $context,
+            'targetClass' => $targetClass,
+        ]);
 
-        /**
-         * Transition Instance Getting.
-         */
-        $transitionInstance = new $transitionClass($this, $request, $data, $targetClass);
+        event(new TransitionStarting(
+            $this->model,
+            $fromState,
+            $targetClass,
+            $transitionClass,
+            $context,
+        ));
 
-        /**
-         * Transition are running
-         */
         try {
-            DB::beginTransaction();
+            $this->model = $this->model->getConnection()->transaction(
+                fn (): Model => $transition->handle()
+            );
+        } catch (GuardErrorException|GuardResultNotFoundException $exception) {
+            event(new TransitionFailed(
+                $this->model,
+                $fromState,
+                $targetClass,
+                $transitionClass,
+                $context,
+                $exception,
+            ));
 
-            $this->model = $transitionInstance->handle();
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            $errorMessage = "{$e->getMessage()} ({$e->getFile()}:{$e->getLine()}){$e->getTraceAsString()}";
-
+            throw $exception;
+        } catch (Throwable $exception) {
             if (config('state-machine.error_logs', true)) {
-                Log::error($errorMessage);
+                Log::error('State transition failed.', [
+                    'exception' => $exception,
+                    'from' => $fromState,
+                    'to' => $targetClass,
+                    'transition' => $transitionClass,
+                ]);
             }
 
-            throw new TransitionFailedException($errorMessage);
+            event(new TransitionFailed(
+                $this->model,
+                $fromState,
+                $targetClass,
+                $transitionClass,
+                $context,
+                $exception,
+            ));
+
+            throw new TransitionFailedException(
+                'Transition failed.',
+                previous: $exception,
+            );
         }
+
+        event(new TransitionCompleted(
+            $this->model,
+            $fromState,
+            $targetClass,
+            $transitionClass,
+            $context,
+        ));
 
         return $this->model;
     }

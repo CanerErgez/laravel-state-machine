@@ -15,11 +15,17 @@ trait HasState
      */
     public function state(string $baseStateMachine, string $mainAttributeName): BaseStateMachine
     {
-        $stateMachine = new $baseStateMachine($this, $mainAttributeName);
+        $stateMachine = app()->make($baseStateMachine, [
+            'model' => $this,
+            'mainAttribute' => $mainAttributeName,
+        ]);
 
         $stateClass = $stateMachine->getState();
 
-        return new $stateClass($this, $mainAttributeName);
+        return app()->make($stateClass, [
+            'model' => $this,
+            'mainAttribute' => $mainAttributeName,
+        ]);
     }
 
 }

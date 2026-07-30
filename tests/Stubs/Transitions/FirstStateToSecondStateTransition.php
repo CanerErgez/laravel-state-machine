@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 class FirstStateToSecondStateTransition extends BaseTransition
 {
 
-    public function guards()
+    public bool $automaticStateUpdate = true;
+
+    public function guards(): array
     {
         return [
             TestGuard::class,
@@ -22,7 +24,7 @@ class FirstStateToSecondStateTransition extends BaseTransition
         return $this->baseStateMachine->getModel();
     }
 
-    public function afterActions()
+    public function afterActions(): array
     {
         return [
             TestAfterAction::class,

@@ -2,150 +2,77 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
-use PHPUnit\Framework\Attributes\Test;
-
-use Caner\StateMachine\Concerns\BaseStateMachine;
-use Caner\StateMachine\Exceptions\TransitionFailedException;
+use Caner\StateMachine\Events\StateChanged;
+use Caner\StateMachine\Events\TransitionCompleted;
+use Caner\StateMachine\Events\TransitionStarting;
 use Caner\StateMachine\Exceptions\TransitionNotFoundException;
+use Caner\StateMachine\Support\TransitionContext;
 use Caner\StateMachine\Tests\Stubs\Enums\TestStateEnums;
 use Caner\StateMachine\Tests\Stubs\Models\TestModel;
 use Caner\StateMachine\Tests\Stubs\States\FirstState;
 use Caner\StateMachine\Tests\Stubs\States\SecondState;
 use Caner\StateMachine\Tests\Stubs\TestStateMachine;
-use Caner\StateMachine\Tests\Stubs\Transitions\FirstStateToFirstStateTransition;
-use Caner\StateMachine\Tests\Stubs\Transitions\FirstStateToSecondStateTransition;
-use Caner\StateMachine\Tests\Stubs\Transitions\SecondStateToFirstStateTransition;
 use Caner\StateMachine\Tests\TestCase;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use PHPUnit\Framework\MockObject\MockObject;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 
 class BaseStateMachineTest extends TestCase
 {
-    /** @var MockObject $testModelMock */
-    public MockObject $testModelMock;
-
-    /** @var MockObject TestStateMachineMock */
-    public MockObject $testStateMachineMock;
-
-    /** @var BaseStateMachine TestStateMachineMock */
-    public BaseStateMachine $testStateMachine;
-
-    public function setUp(): void
+    #[Test]
+    public function it_resolves_the_current_state_and_allowed_transitions(): void
     {
-        parent::setUp();
+        $machine = $this->machine();
 
-        $this->testModelMock = $this->createMock(TestModel::class);
-        $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
-            ->setConstructorArgs([$this->testModelMock, 'status'])
-            ->getMock();
-
-        $this->testStateMachine = new TestStateMachine($this->testModelMock, 'status');
+        $this->assertSame(FirstState::class, $machine->getState());
+        $this->assertSame([SecondState::class], $machine->allowedTransitions());
+        $this->assertTrue($machine->canTransitionTo(SecondState::class));
+        $this->assertFalse($machine->canTransitionTo(FirstState::class));
     }
 
     #[Test]
-    public function it_should_return_valid_initial_state_value(): void
-    {
-        $this->assertEquals($this->testStateMachine->initialState(), TestStateEnums::FirstState);
-    }
-
-    #[Test]
-    public function it_should_return_valid_states(): void
-    {
-        $this->assertEquals($this->testStateMachine->states(), [
-            TestStateEnums::FirstState      => FirstState::class,
-            TestStateEnums::SecondState     => SecondState::class,
-        ]);
-    }
-
-    #[Test]
-    public function it_should_return_valid_transitions(): void
-    {
-        $this->assertEquals($this->testStateMachine->transitions(), [
-            TestStateMachine::class => [
-                $this->testStateMachine->initialState() => FirstStateToFirstStateTransition::class,
-            ],
-            FirstState::class => [
-                SecondState::class => FirstStateToSecondStateTransition::class,
-            ],
-            SecondState::class => [
-                FirstState::class => SecondStateToFirstStateTransition::class,
-            ],
-        ]);
-    }
-
-    #[Test]
-    public function it_should_return_valid_model(): void
-    {
-        $this->assertEquals($this->testStateMachine->getModel(), $this->testModelMock);
-    }
-
-    #[Test]
-    public function it_should_return_valid_state(): void
-    {
-        $this->assertNull($this->testStateMachine->getState());
-    }
-
-    #[Test]
-    public function it_should_return_valid_possible_transitions(): void
-    {
-        $this->testStateMachine = new FirstState($this->testModelMock, 'status');
-
-        $this->assertEquals($this->testStateMachine->getPossibleTransitions(), [
-            SecondState::class,
-        ]);
-    }
-
-    #[Test]
-    public function it_should_throw_transition_not_found_exception(): void
+    public function it_throws_when_a_transition_is_not_defined(): void
     {
         $this->expectException(TransitionNotFoundException::class);
 
-        $this->testStateMachine = new FirstState($this->testModelMock, 'status');
-        $this->testStateMachine->transitionTo(FirstState::class);
+        $this->machine()->transitionTo(FirstState::class);
     }
 
     #[Test]
-    public function it_should_work_well_transition_to_method(): void
+    public function it_runs_a_transition_and_dispatches_lifecycle_events(): void
     {
-        $this->testStateMachine = new FirstState($this->testModelMock, 'status');
+        Event::fake();
+        $machine = $this->machine();
+        $context = new TransitionContext(
+            data: ['source' => 'test'],
+            actor: 42,
+            metadata: ['trace_id' => 'abc'],
+        );
 
-        DB::shouldReceive('beginTransaction')->once();
-        DB::shouldReceive('commit')->once();
+        $model = $machine->transitionTo(SecondState::class, $context);
 
-        $this->assertEquals($this->testStateMachine->transitionTo(SecondState::class), $this->testModelMock);
+        $this->assertSame(TestStateEnums::SecondState, $model->refresh()->status);
+        Event::assertDispatched(TransitionStarting::class);
+        Event::assertDispatched(StateChanged::class);
+        Event::assertDispatched(TransitionCompleted::class);
     }
 
     #[Test]
-    public function it_should_write_log_if_config_is_true(): void
+    public function the_model_trait_resolves_the_state_machine_through_the_container(): void
     {
-        $this->expectException(TransitionFailedException::class);
+        $model = TestModel::create(['status' => TestStateEnums::FirstState]);
 
-        $this->testStateMachine = new FirstState($this->testModelMock, 'status');
-
-        DB::shouldReceive('beginTransaction')->andThrow(new \Exception());
-        DB::shouldReceive('rollBack')->once();
-        Config::set('state-machine.error_logs', true);
-        Log::shouldReceive('error')
-            ->once();
-
-        $this->testStateMachine->transitionTo(SecondState::class);
+        $this->assertInstanceOf(
+            FirstState::class,
+            $model->state(TestStateMachine::class, 'status'),
+        );
     }
 
-    #[Test]
-    public function it_should_not_write_log_if_config_is_false(): void
+    private function machine(): FirstState
     {
-        $this->expectException(TransitionFailedException::class);
+        $model = TestModel::create([
+            'status' => TestStateEnums::FirstState,
+        ]);
 
-        $this->testStateMachine = new FirstState($this->testModelMock, 'status');
-
-        DB::shouldReceive('beginTransaction')->andThrow(new \Exception());
-        DB::shouldReceive('rollBack')->once();
-        Config::set('state-machine.error_logs', false);
-        Log::shouldReceive('error')
-            ->never();
-
-        $this->testStateMachine->transitionTo(SecondState::class);
+        return new FirstState($model, 'status');
     }
 }

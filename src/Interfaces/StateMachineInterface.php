@@ -2,19 +2,26 @@
 
 namespace Caner\StateMachine\Interfaces;
 
-use Illuminate\Http\Request;
+use BackedEnum;
+use Caner\StateMachine\Support\TransitionContext;
+use Illuminate\Database\Eloquent\Model;
 
 interface StateMachineInterface
 {
-    public function __construct();
+    public function getModel(): Model;
 
-    public function getModel();
+    public function initialState(): int|string|BackedEnum;
 
-    public function initialState();
+    /** @return array<int|string, class-string> */
+    public function states(): array;
 
-    public function states();
+    /** @return array<class-string, array<class-string, class-string>> */
+    public function transitions(): array;
 
-    public function transitions();
+    public function canTransitionTo(string $targetClass): bool;
 
-    public function transitionTo(string $targetClass, ?Request $request = null, array $data = []);
+    /** @return array<class-string> */
+    public function allowedTransitions(): array;
+
+    public function transitionTo(string $targetClass, ?TransitionContext $context = null): Model;
 }

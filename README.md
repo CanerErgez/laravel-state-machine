@@ -65,6 +65,22 @@ Follow the guides in this order:
 5. [Create an after action](docs/first_after_action.md)
 6. [Run a transition](docs/example_transition.md)
 7. [Use multiple state machines](docs/create_another_state_machine.md)
+8. [Upgrade from v1 to v2](docs/upgrade_v2.md)
+
+## Transition Flow
+
+Transitions run on the model's database connection:
+
+```text
+Guards → Action → Automatic state update → After actions → Commit
+```
+
+After actions are synchronous and execute before commit. If one fails, the
+transition rolls back. Work that must run only after a successful commit should
+dispatch a queued job with Laravel's `afterCommit()` option.
+
+Use `canTransitionTo()` and `allowedTransitions()` when a UI or API needs to
+inspect the transition graph without executing guards.
 
 ## Changelog
 

@@ -2,180 +2,75 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
-use PHPUnit\Framework\Attributes\Test;
-
 use Caner\StateMachine\Events\AfterActionCompletedEvent;
 use Caner\StateMachine\Events\GuardCompletedEvent;
 use Caner\StateMachine\Exceptions\GuardErrorException;
 use Caner\StateMachine\Exceptions\GuardResultNotFoundException;
-use Caner\StateMachine\Tests\Stubs\AfterActions\TestAfterAction;
+use Caner\StateMachine\Support\TransitionContext;
 use Caner\StateMachine\Tests\Stubs\Guards\TestGuard;
 use Caner\StateMachine\Tests\Stubs\Models\TestModel;
+use Caner\StateMachine\Tests\Stubs\States\FirstState;
+use Caner\StateMachine\Tests\Stubs\States\SecondState;
 use Caner\StateMachine\Tests\Stubs\TestStateMachine;
 use Caner\StateMachine\Tests\Stubs\Transitions\FirstStateToSecondStateTransition;
 use Caner\StateMachine\Tests\TestCase;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\Test;
+use stdClass;
 
 class BaseTransitionTest extends TestCase
 {
-    /** @var MockObject $testModelMock */
-    public MockObject $testModelMock;
-
-    /** @var MockObject $testStateMachineMock */
-    public MockObject $testStateMachineMock;
-
-    /** @var MockObject $testTransitionMock */
-    public MockObject $testTransitionMock;
-
-    /** @var FirstStateToSecondStateTransition $testTransition */
-    public FirstStateToSecondStateTransition $testTransition;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->testModelMock = $this->createMock(TestModel::class);
-        $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
-            ->setConstructorArgs([$this->testModelMock, 'status'])
-            ->getMock();
-
-        $this->testTransitionMock = $this->getMockBuilder(FirstStateToSecondStateTransition::class)
-            ->setConstructorArgs([$this->testStateMachineMock])
-            ->getMock();
-        $this->testTransition = new FirstStateToSecondStateTransition($this->testStateMachineMock);
-    }
-
     #[Test]
-    public function it_should_run_related_methods_and_return_valid_model(): void
-    {
-        $this->testTransitionMock = $this->getMockBuilder(FirstStateToSecondStateTransition::class)
-            ->setConstructorArgs([$this->testStateMachineMock])
-            ->onlyMethods(['runGuards', 'action', 'runAfterActions'])
-            ->getMock();
-
-        $this->testTransitionMock->expects($this->once())
-            ->method('runGuards')
-            ->willReturn(null);
-
-        $this->testTransitionMock->expects($this->once())
-            ->method('action')
-            ->willReturn($this->testModelMock);
-
-        $this->testTransitionMock->expects($this->once())
-            ->method('runAfterActions')
-            ->willReturn(null);
-
-        $this->assertEquals($this->testTransitionMock->handle(), $this->testModelMock);
-    }
-
-    #[Test]
-    public function it_should_run_return_valid_guards(): void
-    {
-        $this->assertEquals($this->testTransition->guards(), [
-            TestGuard::class,
-        ]);
-    }
-
-    #[Test]
-    public function it_should_run_return_model_when_action_is_right(): void
-    {
-        $this->testStateMachineMock->expects($this->once())
-            ->method('getModel')
-            ->willReturn($this->testModelMock);
-
-        $this->testTransition->action();
-    }
-
-    #[Test]
-    public function it_should_run_return_valid_after_actions(): void
-    {
-        $this->assertEquals($this->testTransition->afterActions(), [
-            TestAfterAction::class,
-        ]);
-    }
-
-    #[Test]
-    public function it_should_write_guard_logs_well_when_config_is_right(): void
+    public function it_runs_guards_action_state_update_and_after_actions(): void
     {
         Event::fake();
+        $model = TestModel::create(['status' => 1]);
+        $machine = new FirstState($model, 'status');
+        $transition = new FirstStateToSecondStateTransition(
+            $machine,
+            new TransitionContext(),
+            SecondState::class,
+        );
 
-        Config::set('state-machine.guard_condition_logs', true);
-        Log::shouldReceive('debug')
-            ->twice();
+        $result = $transition->handle();
 
-        $this->testTransition->runGuards();
-
-        Event::assertDispatched(fn (GuardCompletedEvent $event) => $event->guard === TestGuard::class);
+        $this->assertTrue($transition->isRunAllGuards);
+        $this->assertTrue($transition->isRunAllAfterActions);
+        $this->assertSame(2, $result->refresh()->status);
+        Event::assertDispatched(GuardCompletedEvent::class);
+        Event::assertDispatched(AfterActionCompletedEvent::class);
     }
 
     #[Test]
-    public function it_should_not_write_guard_logs_well_when_config_is_wrong(): void
-    {
-        Event::fake();
-
-        Config::set('state-machine.guard_condition_logs', false);
-        Log::shouldReceive('debug')
-            ->never();
-
-        $this->testTransition->runGuards();
-
-        Event::assertDispatched(fn (GuardCompletedEvent $event) => $event->guard === TestGuard::class);
-    }
-
-    #[Test]
-    public function it_should_write_after_action_logs_well_when_config_is_right(): void
-    {
-        Event::fake();
-
-        Config::set('state-machine.after_action_logs', true);
-        Log::shouldReceive('debug')
-            ->twice();
-
-        $this->testTransition->runAfterActions();
-
-        Event::assertDispatched(fn (AfterActionCompletedEvent $event) => $event->afterAction === TestAfterAction::class);
-    }
-
-    #[Test]
-    public function it_should_not_write_after_action_logs_well_when_config_is_wrong(): void
-    {
-        Event::fake();
-
-        Config::set('state-machine.after_action_logs', false);
-        Log::shouldReceive('debug')
-            ->never();
-
-        $this->testTransition->runAfterActions();
-
-        Event::assertDispatched(fn (AfterActionCompletedEvent $event) => $event->afterAction === TestAfterAction::class);
-    }
-
-    #[Test]
-    public function it_should_throw_guard_result_not_found_exception_when_guard_result_have_not_result(): void
+    public function it_rejects_a_missing_guard_result(): void
     {
         $this->expectException(GuardResultNotFoundException::class);
+        $transition = $this->transition();
+        $result = new stdClass();
+        $result->data = [];
 
-        $testGuard = new TestGuard($this->testStateMachineMock);
-
-        $obj = new \stdClass();
-        $obj->data = null;
-
-        $this->testTransition->checkGuardData($obj ,$testGuard);
+        $transition->checkGuardData($result, TestGuard::class);
     }
 
     #[Test]
-    public function it_should_throw_guard_error_exception_when_guard_result_is_false(): void
+    public function it_rejects_a_false_guard_result(): void
     {
         $this->expectException(GuardErrorException::class);
+        $transition = $this->transition();
+        $result = new stdClass();
+        $result->data = ['result' => false];
 
-        $testGuard = new TestGuard($this->testStateMachineMock);
+        $transition->checkGuardData($result, TestGuard::class);
+    }
 
-        $obj = new \stdClass();
-        $obj->data = ['result' => false];
+    private function transition(): FirstStateToSecondStateTransition
+    {
+        $model = TestModel::create(['status' => 1]);
 
-        $this->testTransition->checkGuardData($obj ,$testGuard);
+        return new FirstStateToSecondStateTransition(
+            new TestStateMachine($model, 'status'),
+            new TransitionContext(),
+            SecondState::class,
+        );
     }
 }
