@@ -21,13 +21,13 @@ final class TransitionHistory extends Model
         return (string) config('state-machine.history.table', parent::getTable());
     }
 
-    /** @return MorphTo<Model, TransitionHistory> */
+    /** @return MorphTo<Model, $this> */
     public function model(): MorphTo
     {
         return $this->morphTo();
     }
 
-    /** @return MorphTo<Model, TransitionHistory> */
+    /** @return MorphTo<Model, $this> */
     public function actor(): MorphTo
     {
         return $this->morphTo();
