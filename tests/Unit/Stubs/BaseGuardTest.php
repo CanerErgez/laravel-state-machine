@@ -2,6 +2,8 @@
 
 namespace Caner\StateMachine\Tests\Unit\Stubs;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Caner\StateMachine\Events\GuardCompletedEvent;
 use Caner\StateMachine\Tests\Stubs\Guards\TestGuard;
 use Caner\StateMachine\Tests\Stubs\Models\TestModel;
@@ -29,10 +31,8 @@ class BaseGuardTest extends TestCase
         parent::setUp();
     }
 
-    /**
-     * @test
-     */
-    public function it_should_return_valid_request_data()
+    #[Test]
+    public function it_should_return_valid_request_data(): void
     {
         $requestArray = new Request(['test' => 'test']);
 
@@ -44,10 +44,8 @@ class BaseGuardTest extends TestCase
         $this->assertEquals($testGuardMock->getRequestData(), $requestArray->toArray());
     }
 
-    /**
-     * @test
-     */
-    public function it_should_fire_completed_event()
+    #[Test]
+    public function it_should_fire_completed_event(): void
     {
         Event::fake();
 
@@ -63,10 +61,8 @@ class BaseGuardTest extends TestCase
         Event::assertDispatched(GuardCompletedEvent::class);
     }
 
-    /**
-     * @test
-     */
-    public function it_should_return_right_check_result()
+    #[Test]
+    public function it_should_return_right_check_result(): void
     {
         Event::fake();
 
