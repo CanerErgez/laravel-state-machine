@@ -21,9 +21,9 @@ use Caner\StateMachine\Concerns\BaseStateMachine;
 
 class PostStateMachine extends BaseStateMachine
 {
-    public function initialState(): string
+    public function initialState(): int|string|\BackedEnum
     {
-        return DraftState::class;
+        return PostStatus::DRAFT;
     }
 
     public function states(): array

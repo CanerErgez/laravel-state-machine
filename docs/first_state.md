@@ -21,9 +21,9 @@ final class PostStatus
 Map each value to a state in your state machine:
 
 ```php
-public function initialState(): string
+public function initialState(): int|string|\BackedEnum
 {
-    return DraftState::class;
+    return PostStatus::DRAFT;
 }
 
 public function states(): array

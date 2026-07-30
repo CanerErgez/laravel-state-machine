@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class SecondStateToFirstStateTransition extends BaseTransition
 {
 
-    public function guards()
+    public function guards(): array
     {
         return [
             //
@@ -17,10 +17,10 @@ class SecondStateToFirstStateTransition extends BaseTransition
 
     public function action(): Model
     {
-        // TODO: Implement action() method.
+        return $this->baseStateMachine->getModel();
     }
 
-    public function afterActions()
+    public function afterActions(): array
     {
         return [
             //

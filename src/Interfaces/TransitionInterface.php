@@ -2,28 +2,19 @@
 
 namespace Caner\StateMachine\Interfaces;
 
-use Caner\StateMachine\Concerns\BaseStateMachine;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 
 interface TransitionInterface
 {
-    public function __construct(
-        BaseStateMachine $stateMachine,
-        ?Request $request = null,
-        array $data = [],
-        ?string $targetClass = null
-    );
-
     public function handle(): Model;
 
     public function action(): Model;
 
-    public function guards();
+    public function guards(): array;
 
-    public function runGuards();
+    public function runGuards(): void;
 
-    public function afterActions();
+    public function afterActions(): array;
 
-    public function runAfterActions();
+    public function runAfterActions(): void;
 }

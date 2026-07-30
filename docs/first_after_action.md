@@ -27,6 +27,8 @@ class NotifyReviewers extends BaseAfterAction
 }
 ```
 
-Put the after action's logic in `handle()`. The model, optional request, and transition data are available through `$this->baseStateMachine`, `$this->request`, and `$this->data`.
+Put the after action's logic in `handle()`. The model and transition context are
+available through `$this->baseStateMachine` and `$this->context`. Input data is
+available through `$this->context->data`.
 
 See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.

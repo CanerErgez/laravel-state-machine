@@ -4,10 +4,12 @@ namespace Caner\StateMachine\Concerns;
 
 use Caner\StateMachine\Events\AfterActionCompletedEvent;
 use Caner\StateMachine\Interfaces\BaseAfterActionInterface;
-use Illuminate\Http\Request;
+use Caner\StateMachine\Support\TransitionContext;
 
 abstract class BaseAfterAction implements BaseAfterActionInterface
 {
+    public array $data;
+
     /**
      * BaseAfterAction constructor.
      * @param BaseStateMachine $baseStateMachine
@@ -16,18 +18,18 @@ abstract class BaseAfterAction implements BaseAfterActionInterface
      */
     public function __construct(
         public BaseStateMachine $baseStateMachine,
-        public ?Request $request = null,
-        public array $data = []
+        public TransitionContext $context
     ) {
+        $this->data = $context->data;
     }
 
-    abstract public function handle();
+    abstract public function handle(): void;
 
     /**
      * @return void
      */
     public function completed(): void
     {
-        event(new AfterActionCompletedEvent(get_class($this)));
+        event(new AfterActionCompletedEvent($this::class));
     }
 }

@@ -4,22 +4,24 @@ namespace Caner\StateMachine\Concerns;
 
 use Caner\StateMachine\Events\GuardCompletedEvent;
 use Caner\StateMachine\Interfaces\BaseGuardInterface;
-use Illuminate\Http\Request;
+use Caner\StateMachine\Support\TransitionContext;
 
 abstract class BaseGuard implements BaseGuardInterface
 {
+    public array $data;
+
     public function __construct(
         public BaseStateMachine $baseStateMachine,
-        public ?Request $request = null,
-        public array $data = []
+        public TransitionContext $context
     ) {
+        $this->data = $context->data;
     }
 
     abstract public function check(): self;
 
     public function getRequestData(): array
     {
-        return $this->request?->toArray() ?? [];
+        return $this->context->data;
     }
 
     public function completed(): void
