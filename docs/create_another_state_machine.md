@@ -1,36 +1,36 @@
+# Use Multiple State Machines
 
-# Create Another State Machine
-You can create **unlimited** State Machines 
-for **different models** or **different model attributes**.
+You may define multiple state machines for different models or for different state attributes on the same model.
 
-But you should be `careful`. _**Each State Machine
-can have a different workflow.**_
+For example, an `Order` model could use one state machine for `payment_status` and another for `fulfillment_status`:
 
-You should run one State Machine for one model
-one attribute. Because if you use the same model's same
-attribute, but multiple state machine, workflows
-`can be mixed` with `each other`.
+```php
+$order
+    ->state(PaymentStateMachine::class, 'payment_status')
+    ->transitionTo(PaidState::class);
 
-You should use the right State Machine for the 
-right model and right model attribute.
+$order
+    ->state(FulfillmentStateMachine::class, 'fulfillment_status')
+    ->transitionTo(ShippedState::class);
+```
 
-**Don't forget:** Multiple State Machines are 
-`not related!`
+Keep each model attribute associated with one state machine. Using different state machines for the same attribute can produce conflicting state and transition mappings.
 
-**Strongly Preferred Directory Tree for 
-Multiple State Machines;**
+A clear directory structure keeps the workflows independent:
 
-- app
-- - Services
-- - - YourStateMachine
-- - - - AfterActions
-- - - - Guards
-- - - - States
-- - - - Transitions
-- - - - YourStateMachine.php
-- - - AnotherStateMachine
-- - - - AfterActions
-- - - - Guards
-- - - - States
-- - - - Transitions
-- - - - AnotherStateMachine.php
+```text
+app/
+└── Services/
+    ├── PaymentStateMachine/
+    │   ├── AfterActions/
+    │   ├── Guards/
+    │   ├── States/
+    │   ├── Transitions/
+    │   └── PaymentStateMachine.php
+    └── FulfillmentStateMachine/
+        ├── AfterActions/
+        ├── Guards/
+        ├── States/
+        ├── Transitions/
+        └── FulfillmentStateMachine.php
+```

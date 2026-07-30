@@ -1,22 +1,21 @@
-
 # Laravel State Machine
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)
 [![Total Downloads](https://img.shields.io/packagist/dt/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)
 [![run-tests](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml)
 
-This package helps you to create State Machine data model-based services.
+A simple, model-based state machine package for Laravel.
 
 ## Requirements
 
 - PHP 8.2 or later
 - Laravel 12 or 13
 
-Laravel 13 itself requires PHP 8.3 or later.
+Laravel 13 requires PHP 8.3 or later.
 
 ## Installation
 
-You can install the package via Composer:
+Install the package with Composer:
 
 ```bash
 composer require caner/state-machine
@@ -24,77 +23,66 @@ composer require caner/state-machine
 
 Laravel package discovery registers the service provider automatically.
 
-Publish the config file:
+To customize the package configuration, publish it with:
 
 ```bash
 php artisan vendor:publish --tag=caner-state-machine-config
 ```
 
-## Usage
+## Concepts
 
-### Step by step documentation
+A state machine describes the states a model can be in and the transitions allowed between those states. Each transition may contain:
 
-#### Introducing Concept
-A state machine is a mathematical abstraction used to design algorithms. A state machine reads a set of inputs and changes to a different state based on those inputs.
+1. **Guards** that decide whether the transition may run.
+2. An **action** that performs the main operation.
+3. **After actions** that run after the action succeeds.
 
-A state is a description of the status of a system waiting to execute a transition. A transition is a set of actions to execute when a condition is fulfilled or an event received. In a state diagram, circles represent each possible state and arrows represent transitions between states.
+![Sample state change workflow](docs/img/1.png)
 
-Basically, we are building a `state` for each `status` and running related `transition` when changing the `status`.
+![Sample transition workflow](docs/img/2.png)
 
-![Sample State Change Workflow](https://github.com/CanerErgez/laravel-state-machine/raw/main/docs/img/1.png)
+A typical application structure is:
 
-Each `Transition` should consist of 3 parts. These are the `guards`, `action` and `afterActions` methods.
+```text
+app/
+└── Services/
+    └── PostStateMachine/
+        ├── AfterActions/
+        ├── Guards/
+        ├── States/
+        ├── Transitions/
+        └── PostStateMachine.php
+```
 
-![Sample Transition Workflow](https://github.com/CanerErgez/laravel-state-machine/raw/main/docs/img/2.png)
+## Documentation
 
-I prefer to use package in complex status changes.
+Follow the guides in this order:
 
-Preferred Directory Tree;
+1. [Create a state machine](docs/first_state_machine.md)
+2. [Create a state](docs/first_state.md)
+3. [Create a transition](docs/first_transition.md)
+4. [Create a guard](docs/first_guard.md)
+5. [Create an after action](docs/first_after_action.md)
+6. [Run a transition](docs/example_transition.md)
+7. [Use multiple state machines](docs/create_another_state_machine.md)
 
-- app
-- - Services
-- - - YourStateMachine
-- - - - AfterActions
-- - - - Guards
-- - - - States
-- - - - Transitions
-- - - - YourStateMachine.php
-- - - AnotherStateMachine
-- - - - AfterActions
-- - - - Guards
-- - - - States
-- - - - Transitions
-- - - - AnotherStateMachine.php
+## Changelog
 
-In future versions, we will be added, create state machine parts in artisan commands. This time commands run like this directory tree.
-
-[1-) Create First State Machine](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state_machine.md)  
-[2-) Create First State](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_state.md)  
-[3-) Create First Transition](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_transition.md)  
-[4-) Create First Guard](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_guard.md)  
-[5-) Create First AfterAction](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/first_after_action.md)  
-[6-) Example Transition in Created State Machine](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/example_transition.md)  
-[7-) Create Another State Machine](https://github.com/CanerErgez/laravel-state-machine/tree/main/docs/create_another_state_machine.md)
-
-### Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
+See the [changelog](CHANGELOG.md) for release history.
 
 ## Contributing
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+See the [contribution guide](CONTRIBUTING.md) for details.
 
-### Security
+## Security
 
-If you discover any security related issues, please create an issue on github issues section.
+If you discover a security issue, please open a GitHub issue.
 
 ## Credits
 
-Special thanks for [Tarfin Labs](https://github.com/tarfin-labs)
-
 - [Caner Ergez](https://github.com/CanerErgez)
-- Will be update soon.
+- Special thanks to [Tarfin Labs](https://github.com/tarfin-labs)
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+This package is open-sourced software licensed under the [MIT license](LICENSE.md).

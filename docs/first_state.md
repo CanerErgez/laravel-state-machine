@@ -1,92 +1,56 @@
+# Create a State
 
-# Create First State
-Each state must be extended in your State Machine.
+Create one state class for each value that the model's state attribute can contain. Keeping the values in constants or an enum makes the mapping easier to maintain.
 
-You must define a state for each main attribute of a model.
-For example `status`. This is not required, but recommended.
-
-For example;
-
-My model have a 5 `status` and i store statuses in enums.
-
-For example;
+For example:
 
 ```php
-    namespace App\Enums\ExampleEnums;
+<?php
 
-    class ExampleEnum
-    {
-        const EXAMPLE_ONE = 1;
-        const EXAMPLE_TWO = 2;
-        const EXAMPLE_THREE = 3;
-        const EXAMPLE_FOUR = 4;
-        const EXAMPLE_FİVE = 5;
-    }
+namespace App\Enums;
+
+final class PostStatus
+{
+    public const DRAFT = 1;
+    public const NEED_REVIEW = 2;
+    public const APPROVED = 3;
+    public const UNUSABLE = 4;
+}
 ```
 
-If you have this `status` model, you should create 5 
-state for each `status`.
-
-For example;
+Map each value to a state in your state machine:
 
 ```php
-    ExampleOneState::class,
-    ExampleTwoState::class,
-    ExampleThreeState::class,
-    ExampleFourState::class,
-    ExampleFiveState::class,
+public function initialState(): string
+{
+    return DraftState::class;
+}
+
+public function states(): array
+{
+    return [
+        PostStatus::DRAFT => DraftState::class,
+        PostStatus::NEED_REVIEW => NeedReviewState::class,
+        PostStatus::APPROVED => ApprovedState::class,
+        PostStatus::UNUSABLE => UnusableState::class,
+    ];
+}
 ```
 
-So each `status` will define a state.
-
-You should define which `status` will work with which 
-`state` in the your state machine method of states.
-
-For example;
+A state class extends your state machine and does not need additional methods:
 
 ```php
-    class ExampleStateMachine extends BaseStateMachine
-    {
-        /** 
-        * if the model has not been created yet, 
-        * we get the state of the model as initalState.
-        */
-        public function initialState()
-        {
-            return ExampleOneState::class;
-        }
+<?php
 
-        public function states(): array
-        {
-            return [
-                ExampleEnum::EXAMPLE_ONE   => ExampleOneState::class,
-                ExampleEnum::EXAMPLE_TWO   => ExampleTwoState::class,
-                ExampleEnum::EXAMPLE_THREE => ExampleThreeState::class,
-                ExampleEnum::EXAMPLE_FOUR  => ExampleFourState::class,
-                ExampleEnum::EXAMPLE_FIVE  => ExampleFiveState::class,
-            ];
-        }
+namespace App\Services\PostStateMachine\States;
 
-        // ...
-    }
+use App\Services\PostStateMachine\PostStateMachine;
+
+class DraftState extends PostStateMachine
+{
+}
 ```
 
-In the previous doc, we create PostStateMachine, so we'll 
-create new states in this state machine base.
+Create the other state classes in the same way.
 
-We don't write anything in the created state.
-
-In `App\Services\PostStateMachine\States\ExampleState.php`;
-
-```php
-	namespace App\Services\PostStateMachine\States;
-
-	use App\Services\PostStateMachine\PostStateMachine;
-
-	class ExampleState extends PostStateMachine
-	{
-		//Nothing
-	}
-```
-
-[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project)
+See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.

@@ -1,85 +1,62 @@
-# Create First Transition
-Transitions are so IMPORTANT!
+# Create a Transition
 
-Because all state changes work in the Transition system.
+A transition defines its guards, main action, and after actions.
 
-Let's look at example transition.
-
-In `App/Services/PostStateMachine/Transitions/ExampleTransition.php`;
+Create `app/Services/PostStateMachine/Transitions/DraftToNeedReviewTransition.php`:
 
 ```php
-	namespace App\Services\PostStateMachine\Transitions;
+<?php
 
-	use Caner\StateMachine\Concerns\BaseTransition;
+namespace App\Services\PostStateMachine\Transitions;
 
-	class ExampleTransition extends BaseTransition  
-	{
-		/** 
-		* This control variable can update 
-		* your model main attribute to expected 
-		* target state value.
-		* 
-		* If you enable this feature,
-		* the main attribute update in the action
-		* method is not needed.
-		*/
-		public bool $automaticStateUpdate = true;
-	
-		/** 
-		* This section includes all guards
-		* when run in state change.
-		*  
-		* It's basically control classes about 
-		* the state change.
-		*/
-		public function guards()  
-		{  
-		  return [  
-			 ExampleGuard::class,
-			 AnotherGuard::class,  
-		  ];  
-		}
+use App\Services\PostStateMachine\AfterActions\NotifyReviewers;
+use App\Services\PostStateMachine\Guards\PostCanBeReviewed;
+use Caner\StateMachine\Concerns\BaseTransition;
+use Illuminate\Database\Eloquent\Model;
 
-		/**
-		* This section includes main logic.
-		*  
-		* You have some data in this class;
-		*  
-		* $this->baseStateMachine->getModel() : It returns model data
-		* $this->request : It returns request data or null
-		* $this->data : It returns array
-		*  
-		* $data variable is important, because you use guards returned datas
-		* in this section when you want.
-		*/
-		public function action(): Model  
-		{  
-		  $post = $this->baseStateMachine->getModel();  
-		  
-		  $post->update([  
-			  'status' => PostEnums::UNUSEFUL,  
-		  ]);  
+class DraftToNeedReviewTransition extends BaseTransition
+{
+    /**
+     * When enabled, the package updates the model's state attribute to
+     * the value associated with the target state before action() runs.
+     */
+    public bool $automaticStateUpdate = true;
 
-		  //  $this->data['ExampleGuardReturnedData'];
-		  return $post;  
-		}
-		
-		/** 
-		* This section includes all afterActions
-		* when run in **after** state change.
-		* 
-		* If any After Action fails,
-		* state change effect this fail.
-		* In future verisons not effect state change.
-		*/
-		public function afterActions()  
-		{  
-		  return [  
-			  ExampleAfterAction::class,
-			  AnotherAfterAction::class,
-		  ];  
-		}
-	}
+    public function guards(): array
+    {
+        return [
+            PostCanBeReviewed::class,
+        ];
+    }
+
+    public function action(): Model
+    {
+        $post = $this->baseStateMachine->getModel();
+
+        $post->update([
+            'review_started_at' => $this->data['review_started_at'] ?? now(),
+        ]);
+
+        return $post;
+    }
+
+    public function afterActions(): array
+    {
+        return [
+            NotifyReviewers::class,
+        ];
+    }
+}
 ```
 
-[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project)
+Set `$automaticStateUpdate` to `true` when the package should update the state attribute. Do not update that attribute again in `action()`. Leave the property as `false` if the action should control the state value itself.
+
+Within a transition:
+
+- `$this->baseStateMachine->getModel()` returns the model.
+- `$this->request` contains the optional request.
+- `$this->data` contains custom input and values returned by guards.
+
+The complete transition, including guards and after actions, runs inside a database transaction. If any step throws, the transaction is rolled back and a `TransitionFailedException` is thrown.
+
+See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.

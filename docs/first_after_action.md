@@ -1,47 +1,32 @@
+# Create an After Action
 
-# Create First After Action
-After actions run after the `Guards` and `Action`.
+After actions run synchronously after the transition action and before the surrounding database transaction commits.
 
-The purpose of After Actions is to run notification 
-and similar processes that will run after the state 
-change is over.
+Use them for work that must be part of the transition. If an after action throws an exception, the transition is rolled back.
 
-**Strongly Prefered;**
-- After Actions should be run async (Jobs, Queues, etc.).
-  Because this fails should not be an error in the transition.
-  If After Actions throw any Exception all transitions are rolled back.
-  
-- Sometimes, if you want to stop the process and rollback all changes
-  you can use After Actions sync.
+For notifications or other background work, dispatch a queued job and use `afterCommit()` so the worker cannot process it before the transition commits.
 
-
-Important;
-
-- Your logic should be in `handle()` method.
-  Transition are run each After Actions `handle()` method.
-  
-Example After Action
-
-In `App\Services\PostStateMachine\AfterActions\ExampleAfterAction.php`;
+Create `app/Services/PostStateMachine/AfterActions/NotifyReviewers.php`:
 
 ```php
-    namespace App\Services\PostStateMachine\AfterActions;
+<?php
 
-    use Caner\StateMachine\Concerns\BaseAfterAction;
+namespace App\Services\PostStateMachine\AfterActions;
 
-    class ExampleAfterAction extends BaseAfterAction
+use App\Jobs\NotifyReviewersJob;
+use Caner\StateMachine\Concerns\BaseAfterAction;
+
+class NotifyReviewers extends BaseAfterAction
+{
+    public function handle(): void
     {
-        public function handle()
-        {
-            // Collection Instance
-            $user = User::where('id', 1)->get();
-    
-            ExampleJob::dispatchSync($user);
-            // Or
-            Queue::later(10, new ExampleJob($user), $this->data);
-            // Or
-            Notification::send($users, new PostCreated($this->baseStateMachine, $this->request, $this->data));
-        }
+        $post = $this->baseStateMachine->getModel();
+
+        NotifyReviewersJob::dispatch($post->getKey())->afterCommit();
     }
+}
 ```
-[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project) 
+
+Put the after action's logic in `handle()`. The model, optional request, and transition data are available through `$this->baseStateMachine`, `$this->request`, and `$this->data`.
+
+See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.

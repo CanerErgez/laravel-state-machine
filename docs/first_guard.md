@@ -1,73 +1,64 @@
+# Create a Guard
 
-# Create First Guard
-Guards are the control mechanism of state changes.
+Guards decide whether a transition may run. Put the validation logic in `check()` and always return `$this`.
 
-Notes:
-- You can add additional data for the next steps if you want.
-
-Example;
+The guard result must use one of these forms:
 
 ```php
-    $this->data['data']['additional_data'] = 'Additional Data';
+// Allow the transition.
+$this->data['result'] = true;
+
+// Reject the transition and include an optional error message.
+$this->data['result'] = [
+    'error' => 'The post cannot be published.',
+];
 ```
 
-- You can use this data to next Guards, Actions or AfterActions. So,
-  returning useful values with this `$this->data['data']` would make sense for later use.
-  
-Later Usage;
+The transition stops and throws an exception unless the result is exactly `true`.
+
+## Passing Data to Later Steps
+
+Add values under `$this->data['data']` to pass them to subsequent guards, the transition action, and after actions:
 
 ```php
-    $example = $this->data['additional_data'];
+$this->data['data']['approved_by'] = auth()->id();
 ```
 
-**İmportant!!!**
--  Each Guard should behave `$result->data['result']` value.
-Because each guard after the run check this value. When these 
-values are `false` stop the Transition and throw an exception.
-   
-Example;
+The package merges those values into the transition's root data array, where they are available as:
 
 ```php
-    if($this->exampleMethod()) {
-        /** You can add any data, like an `error` */
-        $this->data['data']['error'] = 'An Error Occured';
-        /** or, like an `any` */
-        $this->data['data']['any'] = 'An Error Occured';
-        
-        $this->data['result'] = false;
-    } else {
-        $this->data['result'] = true;
-    }
-
-    return $this;
+$approvedBy = $this->data['approved_by'];
 ```
 
-- If you are use `$this->data['data']['error']` value,
-when code find any `false` in `$this->data['result']`,
-this error message add the throwing exception. 
+## Example
 
-- Your control logic should be in `check()` method.
-Transition are run each Guards `check()` method.
-  
-- Each Guard must be return `$this`
-
-Example Guard;
-
-In `app\Services\PostStateMachine\Guards\ExampleGuard.php`;
+Create `app/Services/PostStateMachine/Guards/PostCanBeReviewed.php`:
 
 ```php
-    namespace App\Services\PostStateMachine\Guards;
+<?php
 
-    use Caner\StateMachine\Concerns\BaseGuard;
+namespace App\Services\PostStateMachine\Guards;
 
-    class ExampleGuard extends BaseGuard
+use Caner\StateMachine\Concerns\BaseGuard;
+
+class PostCanBeReviewed extends BaseGuard
+{
+    public function check(): BaseGuard
     {
-        public function check(): BaseGuard
-        {
-            $this->data['result'] = $this->baseStateMachine->getModel()->status === 1;
-    
+        if ($this->baseStateMachine->getModel()->is_locked) {
+            $this->data['result'] = [
+                'error' => 'A locked post cannot be reviewed.',
+            ];
+
             return $this;
         }
+
+        $this->data['data']['review_started_at'] = now();
+        $this->data['result'] = true;
+
+        return $this;
     }
+}
 ```
-[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project) 
+
+See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.

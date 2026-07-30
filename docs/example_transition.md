@@ -1,94 +1,76 @@
+# Run a Transition
 
-# Example Transition in Created State Machine
-We created a sample State Machine in previous docs.
+## 1. Add `HasState` to the Model
 
-Let's code first transition in this state machine.
-
-### Step 1: Add `HasState` trait to your Model.
-
-HasState trait add a `state()` method in your model.
-`state()` method return current state.
-
-Example;
+The trait adds a `state()` method that resolves the model's current state.
 
 ```php
-    namespace App\Models;
+<?php
 
-    use Caner\StateMachine\Traits\HasState;
+namespace App\Models;
 
-    class ExampleModel extends Model
+use Caner\StateMachine\Traits\HasState;
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    use HasState;
+}
+```
+
+The method takes:
+
+1. The state machine class.
+2. The model attribute that stores the state value.
+
+```php
+$state = $post->state(PostStateMachine::class, 'status');
+```
+
+## 2. Run an Allowed Transition
+
+Call `transitionTo()` with:
+
+1. The target state class.
+2. An optional `Illuminate\Http\Request`.
+3. An optional custom data array.
+
+```php
+$updatedPost = $post
+    ->state(PostStateMachine::class, 'status')
+    ->transitionTo(
+        NeedReviewState::class,
+        $request,
+        ['initiated_by' => $request->user()->getKey()],
+    );
+```
+
+A controller action may look like this:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Post;
+use App\Services\PostStateMachine\PostStateMachine;
+use App\Services\PostStateMachine\States\NeedReviewState;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class SubmitPostForReviewController extends Controller
+{
+    public function __invoke(Post $post, Request $request): JsonResponse
     {
-        use HasState;
+        $updatedPost = $post
+            ->state(PostStateMachine::class, 'status')
+            ->transitionTo(NeedReviewState::class, $request);
+
+        return response()->json($updatedPost);
     }
+}
 ```
 
-Important;
-- `state()` method should wants 2 parameter.
-  Because we can use more than one state machine in one model.
-- - First parameter is your StateMachine class. // Which State Machine to run ?
-- - The second parameter is your model attribute. // Which Model Attribute to run ?
+Prefer mapping validated request values to known state classes on the server. Do not accept an arbitrary fully qualified class name from user input.
 
-Example in Step 2.
-
-### Step 2: Add transition move method in any Controller
-
-Model's `state()` method are return State Class
-
-```php
-    $model->state(PostStateMachine::class, 'status')
-```
-
-This code will be return `new ExampleState()`
-
-and you can use `transitionTo()` method for change state.
-
-Important;
-- `transitionTo()` method should wants 3 parameter.
-- - First parameter is your `Target State`.
-- - Second parameter is your `$request` (Optional).
-- - Third parameter is your custom `$data` array (Optional).
-    
-You can use this `$data` array to `Guards`, `Action` and
-`AfterActions` in `Transitions`.
-
-Simple usage;
-
-```php
-    $exampleState->transitionTo(TargetState::class, $request, $data);
-```
-
-Example Full Transition;
-
-```php
-    namespace App\Http\Controllers;
-
-    use App\Services\PostStateMachine\PostStateMachine;
-
-    class ExampleController extends Controller
-    {
-        public function update(Model $model, Request $request)
-        {
-            /**
-            * In this code, we get model's state for model's status value.
-            * 
-            * And transition to target. Target is in request parameters.
-            */
-            $model->state(PostStateMachine::class, 'status')
-                ->transitionTo($request->target, $request);
-    
-            return response()->json(['success' => true]);
-        }
-    }
-```
-
-You can get the target state in request. But you should use the full path.
-
-Example Request Body;
-
-```json
-    {
-        "target": "App\\Services\\PostStateMachine\\States\\ExampleState"
-    }
-```
-
-[Please check example project](https://github.com/CanerErgez/laravel-state-machine-sample-project) 
+See the [sample project](https://github.com/CanerErgez/laravel-state-machine-sample-project) for a complete implementation.
