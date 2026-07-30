@@ -35,6 +35,8 @@ class BaseTransitionTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->testModelMock = $this->createMock(TestModel::class);
         $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
             ->setConstructorArgs([$this->testModelMock, 'status'])
@@ -44,8 +46,6 @@ class BaseTransitionTest extends TestCase
             ->setConstructorArgs([$this->testStateMachineMock])
             ->getMock();
         $this->testTransition = new FirstStateToSecondStateTransition($this->testStateMachineMock);
-
-        parent::setUp();
     }
 
     #[Test]
