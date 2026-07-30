@@ -34,14 +34,14 @@ class BaseStateMachineTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->testModelMock = $this->createMock(TestModel::class);
         $this->testStateMachineMock = $this->getMockBuilder(TestStateMachine::class)
             ->setConstructorArgs([$this->testModelMock, 'status'])
             ->getMock();
 
         $this->testStateMachine = new TestStateMachine($this->testModelMock, 'status');
-
-        parent::setUp();
     }
 
     #[Test]
