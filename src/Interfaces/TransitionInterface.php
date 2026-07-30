@@ -10,10 +10,12 @@ interface TransitionInterface
 
     public function action(): Model;
 
+    /** @return array<class-string> */
     public function guards(): array;
 
     public function runGuards(): void;
 
+    /** @return array<class-string> */
     public function afterActions(): array;
 
     public function runAfterActions(): void;

@@ -4,6 +4,4 @@ namespace Caner\StateMachine\Exceptions;
 
 use RuntimeException;
 
-class StateNotFoundException extends RuntimeException
-{
-}
+class StateNotFoundException extends RuntimeException {}

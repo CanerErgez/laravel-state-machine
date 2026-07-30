@@ -10,7 +10,10 @@ final class MakeStateMachineCommand extends GeneratorCommand
     use GeneratesStateMachineClasses;
 
     protected $name = 'make:state-machine';
+
     protected $description = 'Create a state machine class';
+
     protected $type = 'State machine';
+
     protected string $stubName = 'state-machine.stub';
 }

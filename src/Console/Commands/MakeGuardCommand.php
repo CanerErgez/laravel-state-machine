@@ -10,7 +10,10 @@ final class MakeGuardCommand extends GeneratorCommand
     use GeneratesStateMachineClasses;
 
     protected $name = 'make:guard';
+
     protected $description = 'Create a state transition guard';
+
     protected $type = 'Guard';
+
     protected string $stubName = 'guard.stub';
 }

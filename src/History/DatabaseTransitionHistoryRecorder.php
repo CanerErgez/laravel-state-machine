@@ -16,7 +16,7 @@ final class DatabaseTransitionHistoryRecorder implements TransitionHistoryRecord
         BaseTransition $transition,
         TransitionContext $context,
     ): void {
-        if (!config('state-machine.history.enabled', false)) {
+        if (! config('state-machine.history.enabled', false)) {
             return;
         }
 

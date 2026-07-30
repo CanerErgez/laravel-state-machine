@@ -4,6 +4,4 @@ namespace Caner\StateMachine\Exceptions;
 
 use RuntimeException;
 
-class ConcurrentTransitionException extends RuntimeException
-{
-}
+class ConcurrentTransitionException extends RuntimeException {}

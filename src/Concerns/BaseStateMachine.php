@@ -6,14 +6,14 @@ use BackedEnum;
 use Caner\StateMachine\Events\TransitionCompleted;
 use Caner\StateMachine\Events\TransitionFailed;
 use Caner\StateMachine\Events\TransitionStarting;
+use Caner\StateMachine\Exceptions\ConcurrentTransitionException;
 use Caner\StateMachine\Exceptions\GuardErrorException;
 use Caner\StateMachine\Exceptions\GuardResultNotFoundException;
 use Caner\StateMachine\Exceptions\StateNotFoundException;
 use Caner\StateMachine\Exceptions\TransitionFailedException;
 use Caner\StateMachine\Exceptions\TransitionNotFoundException;
-use Caner\StateMachine\Exceptions\ConcurrentTransitionException;
-use Caner\StateMachine\Interfaces\StateMachineInterface;
 use Caner\StateMachine\History\TransitionHistoryRecorder;
+use Caner\StateMachine\Interfaces\StateMachineInterface;
 use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -24,8 +24,7 @@ abstract class BaseStateMachine implements StateMachineInterface
     public function __construct(
         public Model $model,
         public string $mainAttribute,
-    ) {
-    }
+    ) {}
 
     public function getModel(): Model
     {
@@ -60,7 +59,11 @@ abstract class BaseStateMachine implements StateMachineInterface
         return array_keys($this->transitions()[$this->getState()] ?? []);
     }
 
-    /** @deprecated Use allowedTransitions() */
+    /**
+     * @deprecated Use allowedTransitions()
+     *
+     * @return array<class-string>|null
+     */
     public function getPossibleTransitions(): ?array
     {
         $transitions = $this->allowedTransitions();
@@ -73,9 +76,10 @@ abstract class BaseStateMachine implements StateMachineInterface
         return isset($this->transitions()[$this->getState()][$targetClass]);
     }
 
+    /** @return array<int, array{name: string, state: class-string, transition: class-string, metadata: array<string, mixed>}> */
     public function allowedTransitionDetails(?TransitionContext $context = null): array
     {
-        $context ??= new TransitionContext();
+        $context ??= new TransitionContext;
 
         return collect($this->transitions()[$this->getState()] ?? [])
             ->map(function (string $transitionClass, string $targetClass) use ($context): array {
@@ -108,7 +112,7 @@ abstract class BaseStateMachine implements StateMachineInterface
             );
         }
 
-        $context ??= new TransitionContext();
+        $context ??= new TransitionContext;
         event(new TransitionStarting(
             $this->model,
             $fromState,
@@ -191,7 +195,7 @@ abstract class BaseStateMachine implements StateMachineInterface
 
     private function lockAndRefresh(string $expectedState): void
     {
-        if (!config('state-machine.locking.enabled', true) || !$this->model->exists) {
+        if (! config('state-machine.locking.enabled', true) || ! $this->model->exists) {
             return;
         }
 

@@ -18,6 +18,5 @@ final readonly class TransitionFailed
         public string $transition,
         public TransitionContext $context,
         public Throwable $exception,
-    ) {
-    }
+    ) {}
 }

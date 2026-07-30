@@ -23,7 +23,7 @@ interface StateMachineInterface
     /** @return array<class-string> */
     public function allowedTransitions(): array;
 
-    /** @return array<int, array{name: string, state: class-string, transition: class-string, metadata: array}> */
+    /** @return array<int, array{name: string, state: class-string, transition: class-string, metadata: array<string, mixed>}> */
     public function allowedTransitionDetails(?TransitionContext $context = null): array;
 
     public function transitionTo(string $targetClass, ?TransitionContext $context = null): Model;

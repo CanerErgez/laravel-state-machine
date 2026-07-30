@@ -20,8 +20,8 @@ class TestStateMachine extends BaseStateMachine
     public function states(): array
     {
         return [
-            TestStateEnums::FirstState      => FirstState::class,
-            TestStateEnums::SecondState     => SecondState::class,
+            TestStateEnums::FirstState => FirstState::class,
+            TestStateEnums::SecondState => SecondState::class,
         ];
     }
 

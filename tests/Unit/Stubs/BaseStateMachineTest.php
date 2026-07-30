@@ -13,8 +13,8 @@ use Caner\StateMachine\Tests\Stubs\States\FirstState;
 use Caner\StateMachine\Tests\Stubs\States\SecondState;
 use Caner\StateMachine\Tests\Stubs\TestStateMachine;
 use Caner\StateMachine\Tests\TestCase;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
 
 class BaseStateMachineTest extends TestCase

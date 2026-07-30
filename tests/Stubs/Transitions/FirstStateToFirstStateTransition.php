@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class FirstStateToFirstStateTransition extends BaseTransition
 {
-
     public function guards(): array
     {
         return [

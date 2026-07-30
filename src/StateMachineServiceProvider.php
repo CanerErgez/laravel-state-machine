@@ -21,8 +21,7 @@ class StateMachineServiceProvider extends ServiceProvider
                 __DIR__.'/../config/config.php' => config_path('state-machine.php'),
             ], 'caner-state-machine-config');
             $this->publishes([
-                __DIR__.'/../database/migrations/create_state_machine_history_table.php.stub'
-                    => database_path('migrations/'.date('Y_m_d_His').'_create_state_machine_history_table.php'),
+                __DIR__.'/../database/migrations/create_state_machine_history_table.php.stub' => database_path('migrations/'.date('Y_m_d_His').'_create_state_machine_history_table.php'),
             ], 'caner-state-machine-migrations');
             $this->commands([
                 MakeAfterActionCommand::class,

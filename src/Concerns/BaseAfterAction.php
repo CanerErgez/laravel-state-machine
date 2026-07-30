@@ -8,14 +8,9 @@ use Caner\StateMachine\Support\TransitionContext;
 
 abstract class BaseAfterAction implements BaseAfterActionInterface
 {
+    /** @var array<string, mixed> */
     public array $data;
 
-    /**
-     * BaseAfterAction constructor.
-     * @param BaseStateMachine $baseStateMachine
-     * @param Request|null $request
-     * @param array $data
-     */
     public function __construct(
         public BaseStateMachine $baseStateMachine,
         public TransitionContext $context
@@ -25,9 +20,6 @@ abstract class BaseAfterAction implements BaseAfterActionInterface
 
     abstract public function handle(): void;
 
-    /**
-     * @return void
-     */
     public function completed(): void
     {
         event(new AfterActionCompletedEvent($this::class));

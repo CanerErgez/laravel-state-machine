@@ -72,19 +72,8 @@ jobs:
             - name: Install dependencies
               run: composer update --prefer-stable --prefer-dist --no-interaction
 
-            - name: Apply formatting
-              run: composer format
-
-            - name: Upload formatted source
-              uses: actions/upload-artifact@v4
-              with:
-                  name: formatted-source
-                  path: |
-                      config
-                      database
-                      src
-                      stubs
-                      tests
+            - name: Check formatting
+              run: composer format:test
 
             - name: Run static analysis
               run: composer analyse
