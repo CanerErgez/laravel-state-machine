@@ -2,12 +2,14 @@
 
 namespace Caner\StateMachine\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
+
 use Caner\StateMachine\Tests\TestCase;
 
 class StateMachineTest extends TestCase
 {
-    /** @test */
-    public function main_test()
+    #[Test]
+    public function main_test(): void
     {
         $this->assertNull(null);
     }
