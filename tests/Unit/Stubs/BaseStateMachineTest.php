@@ -126,10 +126,7 @@ class BaseStateMachineTest extends TestCase
 
         DB::shouldReceive('beginTransaction')->andThrow(new \Exception());
         DB::shouldReceive('rollBack')->once();
-        Config::shouldReceive('get')
-            ->once()
-            ->with('state-machine.error_logs', true)
-            ->andReturn(true);
+        Config::set('state-machine.error_logs', true);
         Log::shouldReceive('error')
             ->once();
 
@@ -145,10 +142,7 @@ class BaseStateMachineTest extends TestCase
 
         DB::shouldReceive('beginTransaction')->andThrow(new \Exception());
         DB::shouldReceive('rollBack')->once();
-        Config::shouldReceive('get')
-            ->once()
-            ->with('state-machine.error_logs', true)
-            ->andReturn(false);
+        Config::set('state-machine.error_logs', false);
         Log::shouldReceive('error')
             ->never();
 
