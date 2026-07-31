@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class FirstStateToSecondStateTransition extends BaseTransition
 {
-
     public bool $automaticStateUpdate = true;
 
     public function guards(): array

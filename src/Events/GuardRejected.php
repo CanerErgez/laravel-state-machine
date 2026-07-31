@@ -16,6 +16,5 @@ final readonly class GuardRejected
         public string $guard,
         public TransitionContext $context,
         public Throwable $exception,
-    ) {
-    }
+    ) {}
 }

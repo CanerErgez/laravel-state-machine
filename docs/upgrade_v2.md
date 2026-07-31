@@ -75,3 +75,13 @@ $state->allowedTransitions();
 ```
 
 These methods inspect the transition map. They do not run guards.
+
+## Optional v2 features
+
+History is disabled by default. To use it, publish the migration, migrate, and
+enable `state-machine.history.enabled`. Row locking is enabled by default and
+may be disabled with `state-machine.locking.enabled` when the database driver
+does not support row locks.
+
+Transitions may override `name()` and `metadata()`. Use
+`allowedTransitionDetails()` when clients need these values.

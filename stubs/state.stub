@@ -1,0 +1,9 @@
+<?php
+
+namespace DummyNamespace;
+
+use DummyStateMachine;
+
+final class DummyClass extends DummyStateMachine
+{
+}

@@ -6,11 +6,13 @@ use BackedEnum;
 use Caner\StateMachine\Events\TransitionCompleted;
 use Caner\StateMachine\Events\TransitionFailed;
 use Caner\StateMachine\Events\TransitionStarting;
+use Caner\StateMachine\Exceptions\ConcurrentTransitionException;
 use Caner\StateMachine\Exceptions\GuardErrorException;
 use Caner\StateMachine\Exceptions\GuardResultNotFoundException;
 use Caner\StateMachine\Exceptions\StateNotFoundException;
 use Caner\StateMachine\Exceptions\TransitionFailedException;
 use Caner\StateMachine\Exceptions\TransitionNotFoundException;
+use Caner\StateMachine\History\TransitionHistoryRecorder;
 use Caner\StateMachine\Interfaces\StateMachineInterface;
 use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
@@ -22,8 +24,7 @@ abstract class BaseStateMachine implements StateMachineInterface
     public function __construct(
         public Model $model,
         public string $mainAttribute,
-    ) {
-    }
+    ) {}
 
     public function getModel(): Model
     {
@@ -58,7 +59,11 @@ abstract class BaseStateMachine implements StateMachineInterface
         return array_keys($this->transitions()[$this->getState()] ?? []);
     }
 
-    /** @deprecated Use allowedTransitions() */
+    /**
+     * @deprecated Use allowedTransitions()
+     *
+     * @return array<class-string>|null
+     */
     public function getPossibleTransitions(): ?array
     {
         $transitions = $this->allowedTransitions();
@@ -69,6 +74,31 @@ abstract class BaseStateMachine implements StateMachineInterface
     public function canTransitionTo(string $targetClass): bool
     {
         return isset($this->transitions()[$this->getState()][$targetClass]);
+    }
+
+    /** @return array<int, array{name: string, state: class-string, transition: class-string, metadata: array<string, mixed>}> */
+    public function allowedTransitionDetails(?TransitionContext $context = null): array
+    {
+        $context ??= new TransitionContext;
+
+        return collect($this->transitions()[$this->getState()] ?? [])
+            ->map(function (string $transitionClass, string $targetClass) use ($context): array {
+                /** @var BaseTransition $transition */
+                $transition = app()->make($transitionClass, [
+                    'baseStateMachine' => $this,
+                    'context' => $context,
+                    'targetClass' => $targetClass,
+                ]);
+
+                return [
+                    'name' => $transition->name(),
+                    'state' => $targetClass,
+                    'transition' => $transitionClass,
+                    'metadata' => $transition->metadata(),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     public function transitionTo(string $targetClass, ?TransitionContext $context = null): Model
@@ -82,13 +112,7 @@ abstract class BaseStateMachine implements StateMachineInterface
             );
         }
 
-        $context ??= new TransitionContext();
-        $transition = app()->make($transitionClass, [
-            'baseStateMachine' => $this,
-            'context' => $context,
-            'targetClass' => $targetClass,
-        ]);
-
+        $context ??= new TransitionContext;
         event(new TransitionStarting(
             $this->model,
             $fromState,
@@ -99,9 +123,30 @@ abstract class BaseStateMachine implements StateMachineInterface
 
         try {
             $this->model = $this->model->getConnection()->transaction(
-                fn (): Model => $transition->handle()
+                function () use ($context, $fromState, $targetClass, $transitionClass): Model {
+                    $this->lockAndRefresh($fromState);
+
+                    /** @var BaseTransition $transition */
+                    $transition = app()->make($transitionClass, [
+                        'baseStateMachine' => $this,
+                        'context' => $context,
+                        'targetClass' => $targetClass,
+                    ]);
+                    $model = $transition->handle();
+
+                    app(TransitionHistoryRecorder::class)->record(
+                        model: $model,
+                        attribute: $this->mainAttribute,
+                        fromState: $fromState,
+                        toState: $targetClass,
+                        transition: $transition,
+                        context: $context,
+                    );
+
+                    return $model;
+                }
             );
-        } catch (GuardErrorException|GuardResultNotFoundException $exception) {
+        } catch (ConcurrentTransitionException|GuardErrorException|GuardResultNotFoundException $exception) {
             event(new TransitionFailed(
                 $this->model,
                 $fromState,
@@ -146,5 +191,25 @@ abstract class BaseStateMachine implements StateMachineInterface
         ));
 
         return $this->model;
+    }
+
+    private function lockAndRefresh(string $expectedState): void
+    {
+        if (! config('state-machine.locking.enabled', true) || ! $this->model->exists) {
+            return;
+        }
+
+        $fresh = $this->model->newQuery()
+            ->whereKey($this->model->getKey())
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        $this->model = $fresh;
+
+        if ($this->getState() !== $expectedState) {
+            throw new ConcurrentTransitionException(
+                'The model state changed while the transition was starting.'
+            );
+        }
     }
 }

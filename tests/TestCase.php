@@ -19,6 +19,20 @@ class TestCase extends Orchestra
             $table->unsignedTinyInteger('status');
             $table->timestamps();
         });
+
+        Schema::create('state_machine_history', function (Blueprint $table): void {
+            $table->id();
+            $table->string('model_type');
+            $table->string('model_id');
+            $table->string('attribute');
+            $table->string('from_state');
+            $table->string('to_state');
+            $table->string('transition');
+            $table->string('transition_name');
+            $table->nullableMorphs('actor');
+            $table->json('metadata')->nullable();
+            $table->timestamp('created_at');
+        });
     }
 
     protected function getEnvironmentSetUp($app): void

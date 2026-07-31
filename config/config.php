@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'history' => [
+        'enabled' => false,
+        'table' => 'state_machine_history',
+    ],
+
+    'locking' => [
+        'enabled' => true,
+    ],
+
     /**
      * This value ensures that every guard condition is run and completed,
      * it is logged.

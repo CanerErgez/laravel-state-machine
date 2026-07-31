@@ -11,19 +11,21 @@ use Caner\StateMachine\Interfaces\TransitionInterface;
 use Caner\StateMachine\Support\TransitionContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 abstract class BaseTransition implements TransitionInterface
 {
     public bool $isRunAllGuards = false;
+
     public bool $isRunAllAfterActions = false;
+
     public bool $automaticStateUpdate = false;
 
     public function __construct(
         public BaseStateMachine $baseStateMachine,
         public TransitionContext $context,
         public string $targetClass,
-    ) {
-    }
+    ) {}
 
     public function handle(): Model
     {
@@ -36,6 +38,17 @@ abstract class BaseTransition implements TransitionInterface
         $this->runAfterActions();
 
         return $model;
+    }
+
+    public function name(): string
+    {
+        return Str::of(class_basename($this))->beforeLast('Transition')->snake()->toString();
+    }
+
+    /** @return array<string, mixed> */
+    public function metadata(): array
+    {
+        return [];
     }
 
     /** @return array<class-string<BaseGuard>> */
@@ -107,7 +120,7 @@ abstract class BaseTransition implements TransitionInterface
 
     public function checkGuardData(mixed $result, string $guardClass): void
     {
-        if (!isset($result->data['result'])) {
+        if (! isset($result->data['result'])) {
             throw new GuardResultNotFoundException(
                 $guardClass.' did not return result data.'
             );
@@ -124,7 +137,7 @@ abstract class BaseTransition implements TransitionInterface
 
     public function updateState(Model $model): void
     {
-        if (!$this->automaticStateUpdate) {
+        if (! $this->automaticStateUpdate) {
             return;
         }
 

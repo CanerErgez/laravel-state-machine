@@ -30,7 +30,7 @@ class BaseGuardTest extends TestCase
         $model = TestModel::create(['status' => 1]);
         $guard = new TestGuard(
             new TestStateMachine($model, 'status'),
-            new TransitionContext(),
+            new TransitionContext,
         );
 
         $guard->completed();

@@ -16,6 +16,5 @@ final readonly class TransitionCompleted
         public string $toState,
         public string $transition,
         public TransitionContext $context,
-    ) {
-    }
+    ) {}
 }

@@ -1,6 +1,6 @@
 {
     "name": "caner/state-machine",
-    "description": "Laravel Simple State Machine System",
+    "description": "Transaction-safe state machines for Laravel Eloquent models",
     "keywords": [
         "caner",
         "state-machine",
@@ -12,15 +12,18 @@
     "authors": [
         {
             "name": "Caner Ergez",
-            "email": "ergezcaner@gmail.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.2",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
         "illuminate/support": "^12.0|^13.0"
     },
     "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.24",
         "orchestra/testbench": "^10.0|^11.0",
         "phpunit/phpunit": "^11.5|^12.0"
     },
@@ -35,6 +38,14 @@
         }
     },
     "scripts": {
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint",
+        "format:test": "vendor/bin/pint --test",
+        "quality": [
+            "@format:test",
+            "@analyse",
+            "@test"
+        ],
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
     },

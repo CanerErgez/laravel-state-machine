@@ -4,101 +4,191 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/caner/state-machine.svg?style=flat-square)](https://packagist.org/packages/caner/state-machine)
 [![run-tests](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/CanerErgez/laravel-state-machine/actions/workflows/main.yml)
 
-A simple, model-based state machine package for Laravel.
+Transaction-safe, guard-driven state machines for Laravel Eloquent models.
+
+The package is designed for business workflows such as orders, payments,
+subscriptions, approvals, and fulfilment. A model may use multiple independent
+state machines.
 
 ## Requirements
 
-- PHP 8.2 or later
+- PHP 8.2+
 - Laravel 12 or 13
-
-Laravel 13 requires PHP 8.3 or later.
 
 ## Installation
 
-Install the package with Composer:
-
 ```bash
 composer require caner/state-machine
-```
-
-Laravel package discovery registers the service provider automatically.
-
-To customize the package configuration, publish it with:
-
-```bash
 php artisan vendor:publish --tag=caner-state-machine-config
 ```
 
-## Concepts
+Laravel package discovery registers the provider automatically.
 
-A state machine describes the states a model can be in and the transitions allowed between those states. Each transition may contain:
+## Five-minute example
 
-1. **Guards** that decide whether the transition may run.
-2. An **action** that performs the main operation.
-3. **After actions** that run after the action succeeds.
+Generate the building blocks:
 
-![Sample state change workflow](docs/img/1.png)
+```bash
+php artisan make:state-machine Order/OrderStateMachine
+php artisan make:state Order/States/Pending --machine="App\\StateMachines\\Order\\OrderStateMachine"
+php artisan make:state Order/States/Paid --machine="App\\StateMachines\\Order\\OrderStateMachine"
+php artisan make:transition Order/Transitions/MarkAsPaid
+php artisan make:guard Order/Guards/PaymentCaptured
+php artisan make:after-action Order/AfterActions/SendReceipt
+```
 
-![Sample transition workflow](docs/img/2.png)
+Define the machine:
 
-A typical application structure is:
+```php
+final class OrderStateMachine extends BaseStateMachine
+{
+    public function initialState(): int|string|BackedEnum
+    {
+        return OrderStatus::Pending;
+    }
+
+    public function states(): array
+    {
+        return [
+            OrderStatus::Pending->value => Pending::class,
+            OrderStatus::Paid->value => Paid::class,
+        ];
+    }
+
+    public function transitions(): array
+    {
+        return [
+            Pending::class => [
+                Paid::class => MarkAsPaid::class,
+            ],
+        ];
+    }
+}
+```
+
+Use `HasState` on the model and run a transition:
+
+```php
+$order = $order
+    ->state(OrderStateMachine::class, 'status')
+    ->transitionTo(
+        Paid::class,
+        new TransitionContext(
+            data: $request->validated(),
+            actor: $request->user(),
+            metadata: ['source' => 'checkout'],
+        ),
+    );
+```
+
+## Execution guarantees
+
+Each transition runs on the model's own database connection:
 
 ```text
-app/
-└── Services/
-    └── PostStateMachine/
-        ├── AfterActions/
-        ├── Guards/
-        ├── States/
-        ├── Transitions/
-        └── PostStateMachine.php
+row lock → guards → action → state update → after actions → audit → commit
+```
+
+- A rejected guard stops the transition.
+- An exception in the action or a synchronous after action rolls everything back.
+- The row lock prevents two workers from applying transitions from the same stale state.
+- Work that must happen only after commit should be dispatched from an after action
+  with `Job::dispatch(...)->afterCommit()`.
+- Unexpected exceptions are wrapped in `TransitionFailedException` and retained as
+  `getPrevious()`. Guard and concurrency exceptions remain directly catchable.
+
+## Transition names and metadata
+
+Transitions get a snake-case name automatically. Override it or provide static
+metadata when exposing actions to an API:
+
+```php
+public function name(): string
+{
+    return 'capture_payment';
+}
+
+public function metadata(): array
+{
+    return ['label' => 'Capture payment', 'destructive' => false];
+}
+```
+
+```php
+$machine->canTransitionTo(Paid::class);
+$machine->allowedTransitions();
+$machine->allowedTransitionDetails();
+```
+
+The query methods inspect the transition graph and never execute guards.
+
+## Audit history
+
+Publish and run the package migration:
+
+```bash
+php artisan vendor:publish --tag=caner-state-machine-migrations
+php artisan migrate
+```
+
+Then enable history in `config/state-machine.php`. Audit rows are written inside
+the same transaction and contain the model, attribute, states, transition,
+actor, and merged transition/context metadata.
+
+```php
+'history' => ['enabled' => true],
+```
+
+```php
+$order->stateTransitionHistory()->latest()->get();
+```
+
+You can replace the recorder by binding your own implementation of
+`TransitionHistoryRecorder`.
+
+## Mermaid diagrams
+
+```bash
+php artisan state-machine:diagram \
+  "App\\StateMachines\\Order\\OrderStateMachine" \
+  "App\\Models\\Order" 42 status \
+  --output=docs/order-workflow.mmd
+```
+
+## Multiple workflows
+
+Use a different machine and attribute for each workflow:
+
+```php
+$order->state(OrderStateMachine::class, 'status');
+$order->state(PaymentStateMachine::class, 'payment_status');
 ```
 
 ## Documentation
 
-Follow the guides in this order:
+- [State machine](docs/first_state_machine.md)
+- [States](docs/first_state.md)
+- [Transitions](docs/first_transition.md)
+- [Guards](docs/first_guard.md)
+- [After actions](docs/first_after_action.md)
+- [Running transitions](docs/example_transition.md)
+- [Multiple state machines](docs/create_another_state_machine.md)
+- [Upgrade from v1](docs/upgrade_v2.md)
+- [Release checklist](docs/releasing.md)
 
-1. [Create a state machine](docs/first_state_machine.md)
-2. [Create a state](docs/first_state.md)
-3. [Create a transition](docs/first_transition.md)
-4. [Create a guard](docs/first_guard.md)
-5. [Create an after action](docs/first_after_action.md)
-6. [Run a transition](docs/example_transition.md)
-7. [Use multiple state machines](docs/create_another_state_machine.md)
-8. [Upgrade from v1 to v2](docs/upgrade_v2.md)
+## Development
 
-## Transition Flow
-
-Transitions run on the model's database connection:
-
-```text
-Guards → Action → Automatic state update → After actions → Commit
+```bash
+composer quality
 ```
 
-After actions are synchronous and execute before commit. If one fails, the
-transition rolls back. Work that must run only after a successful commit should
-dispatch a queued job with Laravel's `afterCommit()` option.
-
-Use `canTransitionTo()` and `allowedTransitions()` when a UI or API needs to
-inspect the transition graph without executing guards.
-
-## Changelog
-
-See the [changelog](CHANGELOG.md) for release history.
-
-## Contributing
-
-See the [contribution guide](CONTRIBUTING.md) for details.
+This runs Pint, Larastan, and the PHPUnit suite. CI tests every supported
+Laravel/PHP combination.
 
 ## Security
 
-If you discover a security issue, please open a GitHub issue.
-
-## Credits
-
-- [Caner Ergez](https://github.com/CanerErgez)
-- Special thanks to [Tarfin Labs](https://github.com/tarfin-labs)
+Please follow the [security policy](SECURITY.md).
 
 ## License
 
-This package is open-sourced software licensed under the [MIT license](LICENSE.md).
+The MIT License. See [LICENSE.md](LICENSE.md).

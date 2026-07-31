@@ -15,6 +15,5 @@ final readonly class StateChanged
         public string $fromState,
         public string $toState,
         public TransitionContext $context,
-    ) {
-    }
+    ) {}
 }

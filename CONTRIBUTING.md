@@ -10,11 +10,13 @@ Fork the repository, create a branch from `main`, and install dependencies:
 composer install
 ```
 
-Run the test suite before submitting a pull request:
+Run the complete quality suite before submitting a pull request:
 
 ```bash
-composer test
+composer quality
 ```
+
+This checks Pint formatting, Larastan static analysis, and PHPUnit.
 
 ## Pull Requests
 

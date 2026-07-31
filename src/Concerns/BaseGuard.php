@@ -8,6 +8,7 @@ use Caner\StateMachine\Support\TransitionContext;
 
 abstract class BaseGuard implements BaseGuardInterface
 {
+    /** @var array<string, mixed> */
     public array $data;
 
     public function __construct(
@@ -19,6 +20,7 @@ abstract class BaseGuard implements BaseGuardInterface
 
     abstract public function check(): self;
 
+    /** @return array<string, mixed> */
     public function getRequestData(): array
     {
         return $this->context->data;

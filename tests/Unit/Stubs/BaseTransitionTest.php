@@ -28,7 +28,7 @@ class BaseTransitionTest extends TestCase
         $machine = new FirstState($model, 'status');
         $transition = new FirstStateToSecondStateTransition(
             $machine,
-            new TransitionContext(),
+            new TransitionContext,
             SecondState::class,
         );
 
@@ -46,7 +46,7 @@ class BaseTransitionTest extends TestCase
     {
         $this->expectException(GuardResultNotFoundException::class);
         $transition = $this->transition();
-        $result = new stdClass();
+        $result = new stdClass;
         $result->data = [];
 
         $transition->checkGuardData($result, TestGuard::class);
@@ -57,7 +57,7 @@ class BaseTransitionTest extends TestCase
     {
         $this->expectException(GuardErrorException::class);
         $transition = $this->transition();
-        $result = new stdClass();
+        $result = new stdClass;
         $result->data = ['result' => false];
 
         $transition->checkGuardData($result, TestGuard::class);
@@ -69,7 +69,7 @@ class BaseTransitionTest extends TestCase
 
         return new FirstStateToSecondStateTransition(
             new TestStateMachine($model, 'status'),
-            new TransitionContext(),
+            new TransitionContext,
             SecondState::class,
         );
     }

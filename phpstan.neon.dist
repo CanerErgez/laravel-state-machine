@@ -1,0 +1,11 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    tmpDir: .phpstan.cache
+    ignoreErrors:
+        -
+            identifier: trait.unused
